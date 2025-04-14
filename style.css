@@ -1,0 +1,230 @@
+/****************************************************
+ *  SIMPLE ECHO APP SIMULATION
+ *  - Handles audio recording (MediaRecorder)
+ *  - Simulates emotion detection
+ *  - Displays feed items
+ ****************************************************/
+
+ // Tabs
+ const tabButtons = document.querySelectorAll(".tab-btn");
+ 
+ // Recording
+ const recordButton = document.getElementById("recordButton");
+ const stopButton = document.getElementById("stopButton");
+ const statusText = document.getElementById("status");
+ let mediaRecorder;
+ let recordedChunks = [];
+ 
+ // Feed container
+ const feedContainer = document.getElementById("feedContainer");
+ 
+ // Hardcoded feed data (for demonstration)
+ let feedData = [
+   {
+     id: 1,
+     userName: "Alex Johnson",
+     time: "10 minutes ago",
+     emotion: "Excited",
+     audioUrl: "", // No real audio for placeholders
+   },
+   {
+     id: 2,
+     userName: "Emma Wilson",
+     time: "20 minutes ago",
+     emotion: "Calm",
+     audioUrl: "",
+   }
+ ];
+ 
+ // Preset emotions with label and color coding
+ const emotions = [
+   { label: "Excited", color: "#e74c3c" },
+   { label: "Joy", color: "#f1c40f" },
+   { label: "Calm", color: "#3498db" },
+   { label: "Annoyed", color: "#e67e22" },
+   { label: "Sad", color: "#9b59b6" }
+ ];
+ 
+ /****************************************************
+  *  INITIALIZATION
+  ****************************************************/
+ function init() {
+   // Render initial feed
+   renderFeedItems(feedData);
+ 
+   // Set up tab navigation
+   tabButtons.forEach((btn) => {
+     btn.addEventListener("click", handleTabClick);
+   });
+ 
+   // Check for MediaRecorder support
+   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+     statusText.textContent = "MediaRecorder API not supported in this browser.";
+     recordButton.disabled = true;
+   } else {
+     recordButton.addEventListener("mousedown", startRecording);
+     recordButton.addEventListener("touchstart", startRecording);
+ 
+     // For "tap & hold" style, we can listen for mouse/touch up
+     recordButton.addEventListener("mouseup", stopRecording);
+     recordButton.addEventListener("mouseleave", stopRecording);
+     recordButton.addEventListener("touchend", stopRecording);
+ 
+     // In case you want explicit click-to-start, click-to-stop:
+     stopButton.addEventListener("click", stopRecording);
+   }
+ }
+ 
+ /****************************************************
+  *  RENDER FEED
+  ****************************************************/
+ function renderFeedItems(dataArray) {
+   feedContainer.innerHTML = "";
+   dataArray.forEach((item) => {
+     // Create feed card
+     const card = document.createElement("div");
+     card.classList.add("card");
+ 
+     // Header (user + time + emotion)
+     const headerDiv = document.createElement("div");
+     headerDiv.classList.add("feed-header");
+ 
+     const userDiv = document.createElement("div");
+     userDiv.classList.add("feed-user");
+ 
+     const avatar = document.createElement("div");
+     avatar.classList.add("avatar");
+     userDiv.appendChild(avatar);
+ 
+     const userInfo = document.createElement("div");
+     const userName = document.createElement("div");
+     userName.classList.add("feed-user-name");
+     userName.textContent = item.userName;
+ 
+     const timeAgo = document.createElement("div");
+     timeAgo.classList.add("feed-time");
+     timeAgo.textContent = item.time;
+ 
+     userInfo.appendChild(userName);
+     userInfo.appendChild(timeAgo);
+     userDiv.appendChild(userInfo);
+ 
+     const emotionBadge = document.createElement("span");
+     emotionBadge.classList.add("emotion-badge");
+     emotionBadge.textContent = item.emotion;
+ 
+     headerDiv.appendChild(userDiv);
+     headerDiv.appendChild(emotionBadge);
+ 
+     // Audio area
+     const audioElem = document.createElement("audio");
+     audioElem.controls = true;
+     audioElem.src = item.audioUrl; // Might be empty if placeholder
+     audioElem.classList.add("audio-controls");
+ 
+     const waveformDiv = document.createElement("div");
+     waveformDiv.classList.add("waveform");
+ 
+     // Actions
+     const actionsDiv = document.createElement("div");
+     actionsDiv.classList.add("feed-actions");
+ 
+     const likeBtn = document.createElement("button");
+     likeBtn.innerHTML = `<span class="material-symbols-outlined">favorite</span> Like`;
+ 
+     const replyBtn = document.createElement("button");
+     replyBtn.innerHTML = `<span class="material-symbols-outlined">chat</span> Reply`;
+ 
+     actionsDiv.appendChild(likeBtn);
+     actionsDiv.appendChild(replyBtn);
+ 
+     // Append elements to card
+     card.appendChild(headerDiv);
+     card.appendChild(audioElem);
+     card.appendChild(waveformDiv);
+     card.appendChild(actionsDiv);
+ 
+     // Add card to feed
+     feedContainer.appendChild(card);
+   });
+ }
+ 
+ /****************************************************
+  *  TAB HANDLER (For You, Following, Trending)
+  ****************************************************/
+ function handleTabClick(e) {
+   // Remove active class from all tabs
+   tabButtons.forEach((btn) => btn.classList.remove("active"));
+ 
+   // Add active class to clicked tab
+   e.target.classList.add("active");
+ 
+   // NOTE: In a real app, you'd filter feedData or fetch new data
+   // Here, we'll just re-render the same feed for simplicity
+   const selectedTab = e.target.dataset.tab;
+   // For demonstration, do nothing special except log
+   console.log("Selected Tab:", selectedTab);
+ }
+ 
+ /****************************************************
+  *  RECORDING FUNCTIONS
+  ****************************************************/
+ function startRecording() {
+   // If already recording, do nothing
+   if (mediaRecorder && mediaRecorder.state === "recording") {
+     return;
+   }
+ 
+   navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+     mediaRecorder = new MediaRecorder(stream);
+     mediaRecorder.start();
+     statusText.textContent = "Recording...";
+     recordButton.disabled = true;
+     stopButton.disabled = false;
+     recordedChunks = [];
+ 
+     mediaRecorder.ondataavailable = function(e) {
+       if (e.data.size > 0) {
+         recordedChunks.push(e.data);
+       }
+     };
+ 
+     mediaRecorder.onstop = function() {
+       const blob = new Blob(recordedChunks, { type: "audio/webm" });
+       const audioURL = URL.createObjectURL(blob);
+       // Simulate emotion detection by selecting a random emotion from the preset list
+       const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)].label;
+       // Insert new item into feedData
+       const newItem = {
+         id: Date.now(),
+         userName: "You",
+         time: "Just now",
+         emotion: randomEmotion,
+         audioUrl: audioURL
+       };
+       feedData.unshift(newItem); // Add to front of feed
+       renderFeedItems(feedData);
+     };
+   })
+   .catch(err => {
+     console.error("Error accessing audio:", err);
+     statusText.textContent = "Error accessing audio: " + err;
+   });
+ }
+ 
+ function stopRecording() {
+   // If we're not recording, do nothing
+   if (!mediaRecorder || mediaRecorder.state !== "recording") {
+     return;
+   }
+   mediaRecorder.stop();
+   statusText.textContent = "Recording stopped. Processing...";
+   recordButton.disabled = false;
+   stopButton.disabled = true;
+ }
+ 
+ /****************************************************
+  *  START THE APP
+  ****************************************************/
+ window.addEventListener("DOMContentLoaded", init);
+ 

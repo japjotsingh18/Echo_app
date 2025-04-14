@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Echo - Voice Messaging</title>
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="logo">Echo</div>
+    <div class="nav-icons">
+      <!-- Placeholder icons - replace with real icons or images if you want -->
+      <span class="material-symbols-outlined">search</span>
+      <span class="material-symbols-outlined">person</span>
+    </div>
+  </nav>
+
+  <!-- Main container with feed + sidebar -->
+  <div class="container">
+    <!-- Feed Section -->
+    <div class="feed">
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="foryou">For You</button>
+        <button class="tab-btn" data-tab="following">Following</button>
+        <button class="tab-btn" data-tab="trending">Trending</button>
+      </div>
+
+      <!-- Share Voice Card -->
+      <div class="card share-voice">
+        <h3>Share your voice</h3>
+        <p>Record a new Echo</p>
+        <!-- Recording Section -->
+        <div class="record-controls">
+          <button id="recordButton">Tap to Record</button>
+          <button id="stopButton" disabled>Stop</button>
+          <p id="status">Tap and hold to record your voice</p>
+        </div>
+      </div>
+
+      <!-- Feed Items will be inserted here dynamically -->
+      <div id="feedContainer">
+        <!-- Sample feed items (hardcoded) -->
+        <!-- We'll also programmatically add new ones via script.js -->
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="sidebar">
+      <!-- Trending Emotions -->
+      <div class="sidebar-card">
+        <h4>Trending Emotions</h4>
+        <ul class="trending-emotions">
+          <!-- The progress bars and percentages are just examples -->
+          <li class="emotion-item">
+            <div class="label">Excited</div>
+            <div class="progress-bar excited"><span style="width:80%"></span></div>
+            <div class="percentage">+24%</div>
+          </li>
+          <li class="emotion-item">
+            <div class="label">Joy</div>
+            <div class="progress-bar joy"><span style="width:70%"></span></div>
+            <div class="percentage">+18%</div>
+          </li>
+          <li class="emotion-item">
+            <div class="label">Calm</div>
+            <div class="progress-bar calm"><span style="width:60%"></span></div>
+            <div class="percentage">+12%</div>
+          </li>
+          <li class="emotion-item">
+            <div class="label">Annoyed</div>
+            <div class="progress-bar annoyed"><span style="width:40%"></span></div>
+            <div class="percentage">+3%</div>
+          </li>
+          <li class="emotion-item">
+            <div class="label">Sad</div>
+            <div class="progress-bar sad"><span style="width:50%"></span></div>
+            <div class="percentage">+5%</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Voices to Follow -->
+      <div class="sidebar-card">
+        <h4>Voices to Follow</h4>
+        <ul class="voices-list">
+          <li class="voice-item">
+            <div class="avatar"></div>
+            <div>
+              <strong>Marcus Kim</strong>
+              <p>Tech Guru</p>
+            </div>
+          </li>
+          <li class="voice-item">
+            <div class="avatar"></div>
+            <div>
+              <strong>Aisha Johnson</strong>
+              <p>Fitness Coach</p>
+            </div>
+          </li>
+          <li class="voice-item">
+            <div class="avatar"></div>
+            <div>
+              <strong>David Wu</strong>
+              <p>Music Producer</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link to external JavaScript -->
+  <script src="script.js"></script>
+  <!-- For demo icons (Material Icons) - optional -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+</body>
+</html>
