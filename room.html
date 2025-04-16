@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo - Morning Vibes Room</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    :root {
+      --bg-dark: #0d1117;
+      --bg-light: #f0f2f5;
+      --accent: #3b82f6;
+      --happy: #fbbf24;
+      --calm: #38bdf8;
+      --excited: #f87171;
+      --text-dark: #1f2937;
+      --text-light: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    .room-container {
+      padding: 24px;
+      color: var(--text-light);
+    }
+
+    .room-header {
+      margin-bottom: 24px;
+    }
+
+    .room-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: white;
+    }
+
+    .room-description {
+      font-size: 1.2rem;
+      color: #aaa;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .room-tags {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .room-tag {
+      background: #2e2e3e;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      color: white;
+    }
+
+    .room-emotion {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .emotion-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 16px;
+      background: var(--happy);
+      color: #1a1a1a;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .room-duration {
+      color: #aaa;
+      font-size: 14px;
+      margin-left: 16px;
+    }
+
+    .participants-section {
+      margin: 32px 0;
+    }
+
+    .section-header {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-tab {
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      background: none;
+      border: 1px solid #444;
+      color: white;
+      font-size: 16px;
+    }
+
+    .section-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .participants-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .participant-card {
+      background: #13171f;
+      border-radius: 15px;
+      padding: 20px;
+      position: relative;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    }
+
+    .participant-role {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--accent);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .participant-emotion {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--happy);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #1a1a1a;
+      font-weight: bold;
+    }
+
+    .participant-name {
+      margin-top: 40px;
+      font-weight: bold;
+      font-size: 18px;
+      color: white;
+    }
+
+    .voice-pattern {
+      color: #aaa;
+      font-size: 14px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .vertical-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 60px;
+      height: 100vh;
+      background-color: #0b0e13;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 1rem;
+      z-index: 999;
+    }
+
+    .nav-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0.8rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .nav-icon .material-symbols-outlined {
+      font-size: 24px;
+    }
+
+    .nav-icon:hover,
+    .nav-icon.active {
+      background-color: var(--accent);
+    }
+
+    .room-container {
+      margin-left: 60px;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Vertical Navigation -->
+  <div class="vertical-nav">
+    <a href="liveroom.html" class="nav-icon active">
+      <span class="material-symbols-outlined">home</span>
+    </a>
+    <a href="#" class="nav-icon">
+      <span class="material-symbols-outlined">search</span>
+    </a>
+    <a href="#" class="nav-icon">
+      <span class="material-symbols-outlined">notifications</span>
+    </a>
+    <a href="#" class="nav-icon">
+      <span class="material-symbols-outlined">mail</span>
+    </a>
+    <a href="#" class="nav-icon">
+      <span class="material-symbols-outlined">library_books</span>
+    </a>
+    <a href="#" class="nav-icon">
+      <span class="material-symbols-outlined">campaign</span>
+    </a>
+    <a href="#" class="nav-icon">
+      <span class="material-symbols-outlined">bookmark</span>
+    </a>
+    <a href="#" class="nav-icon">
+      <span class="material-symbols-outlined">person</span>
+    </a>
+  </div>
+
+  <!-- Main Room Content -->
+  <main class="room-container">
+    <div class="room-header">
+      <h1 class="room-title">Morning Vibes</h1>
+      <p class="room-description">Start your day with positive energy and good conversations about life, goals, and mindfulness techniques.</p>
+      
+      <div class="room-tags">
+        <span class="room-tag">Mindfulness</span>
+        <span class="room-tag">Positivity</span>
+        <span class="room-tag">Morning Routine</span>
+        <span class="room-tag">Wellness</span>
+      </div>
+
+      <div class="room-emotion">
+        <div class="emotion-label">
+          <span>😊</span>
+          <span>Happy</span>
+        </div>
+        <span class="room-duration">45m</span>
+      </div>
+    </div>
+
+    <div class="participants-section">
+      <div class="section-header">
+        <button class="section-tab active">👥 Speakers</button>
+        <button class="section-tab">👋 All Participants</button>
+      </div>
+
+      <div class="participants-grid">
+        <div class="participant-card">
+          <span class="participant-role">Host</span>
+          <span class="participant-emotion">😊 Happy</span>
+          <h3 class="participant-name">Sarah K.</h3>
+          <div class="voice-pattern">
+            <span class="material-symbols-outlined">graphic_eq</span>
+            Happy Voice Pattern
+          </div>
+        </div>
+
+        <div class="participant-card">
+          <span class="participant-role">Mod</span>
+          <span class="participant-emotion">🔥 Excited</span>
+          <h3 class="participant-name">Jake M.</h3>
+        </div>
+
+        <div class="participant-card">
+          <span class="participant-role">Speaker</span>
+          <span class="participant-emotion">😌 Calm</span>
+          <h3 class="participant-name">Emma L.</h3>
+          <div class="voice-pattern">
+            <span class="material-symbols-outlined">graphic_eq</span>
+            Calm Voice Pattern
+          </div>
+        </div>
+
+        <div class="participant-card">
+          <span class="participant-role">Speaker</span>
+          <span class="participant-emotion">😐 Neutral</span>
+          <h3 class="participant-name">David R.</h3>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Add click handlers for the tabs
+    document.querySelectorAll('.section-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html> 

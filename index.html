@@ -41,10 +41,6 @@
           <span>Home</span>
         </a>
         <a href="#" class="nav-link">
-          <span class="material-symbols-outlined">search</span>
-          <span>Explore</span>
-        </a>
-        <a href="#" class="nav-link">
           <span class="material-symbols-outlined">notifications</span>
           <span>Notifications</span>
         </a>
@@ -85,6 +81,31 @@
 
     <!-- Main Content -->
     <main class="main-content">
+      <!-- Live Room Banner -->
+      <div class="live-room-banner">
+        <div class="live-room-icon">
+          <div class="wave-icon">
+            <span class="material-symbols-outlined">graphic_eq</span>
+          </div>
+        </div>
+        <h2 class="live-room-title">Live Room</h2>
+        <p class="live-room-description">Join the conversation about music production techniques</p>
+        <div class="live-room-stats">
+          <div class="stat">
+            <span class="material-symbols-outlined">group</span>
+            42 listeners
+          </div>
+          <div class="stat">
+            <span class="material-symbols-outlined">mic</span>
+            5 speakers
+          </div>
+        </div>
+        <button class="join-room-btn" onclick="window.location.href='liveroom.html'">
+          <span class="material-symbols-outlined">mic</span>
+          Join Room
+        </button>
+      </div>
+
       <header class="main-header">
         <div class="tabs">
           <button class="tab-btn active" data-tab="foryou">For You</button>
@@ -96,7 +117,15 @@
       <!-- Voice Composer -->
       <div class="voice-composer">
         <div class="composer-header">
-          <img src="https://i.pravatar.cc/150?img=12" alt="Your profile picture" class="user-avatar">
+          <div class="bitmoji-container user-avatar">
+            <svg viewBox="0 0 100 100" class="bitmoji">
+              <circle cx="50" cy="50" r="45" fill="#FFD180"/>
+              <circle cx="50" cy="45" r="35" fill="#FFAB40"/>
+              <circle cx="35" cy="40" r="5" fill="#212121"/>
+              <circle cx="65" cy="40" r="5" fill="#212121"/>
+              <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
           <div class="composer-prompt">What's happening?</div>
         </div>
         <div class="record-controls">
@@ -219,7 +248,15 @@
           <!-- Profile Info Section -->
           <div class="profile-info-section">
             <div class="profile-avatar-container">
-              <img src="assets/avatar.png" alt="Alex Morgan" class="profile-avatar">
+              <div class="bitmoji-container profile-avatar">
+                <svg viewBox="0 0 100 100" class="bitmoji">
+                  <circle cx="50" cy="50" r="45" fill="#FFD180"/>
+                  <circle cx="50" cy="45" r="35" fill="#FFAB40"/>
+                  <circle cx="35" cy="40" r="5" fill="#212121"/>
+                  <circle cx="65" cy="40" r="5" fill="#212121"/>
+                  <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </div>
             </div>
             
             <div class="profile-details">
@@ -405,21 +442,47 @@
         <h2>Trending Voices</h2>
         <div class="voices-list">
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=1" alt="User avatar" class="post-avatar">
+            <div class="bitmoji-container post-avatar" data-bitmoji="sarah">
+              <svg viewBox="0 0 100 100" class="bitmoji">
+                <circle cx="50" cy="50" r="45" fill="#FFE0B2"/>
+                <path d="M20 40 h60 v25 q-30 20 -60 0 v-25" fill="#4A148C"/>
+                <circle cx="35" cy="40" r="5" fill="#212121"/>
+                <circle cx="65" cy="40" r="5" fill="#212121"/>
+                <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 30 q35 -20 70 0" fill="#3E2723" stroke="none"/>
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Sarah Chen</div>
               <div class="voice-bio">Tech enthusiast & podcaster</div>
             </div>
           </div>
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=2" alt="User avatar" class="post-avatar">
+            <div class="bitmoji-container post-avatar" data-bitmoji="marcus">
+              <svg viewBox="0 0 100 100" class="bitmoji">
+                <circle cx="50" cy="50" r="45" fill="#8D6E63"/>
+                <path d="M20 30 h60 v10 q-30 20 -60 0 v-10" fill="#212121"/>
+                <circle cx="35" cy="40" r="5" fill="#212121"/>
+                <circle cx="65" cy="40" r="5" fill="#212121"/>
+                <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+                <path d="M25 25 h50" stroke="#212121" stroke-width="5"/>
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Marcus Johnson</div>
               <div class="voice-bio">Music producer & vocalist</div>
             </div>
           </div>
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=3" alt="User avatar" class="post-avatar">
+            <div class="bitmoji-container post-avatar" data-bitmoji="elena">
+              <svg viewBox="0 0 100 100" class="bitmoji">
+                <circle cx="50" cy="50" r="45" fill="#FFCCBC"/>
+                <path d="M15 35 q35 -30 70 0" fill="#FF5722" stroke="none"/>
+                <circle cx="35" cy="40" r="5" fill="#212121"/>
+                <circle cx="65" cy="40" r="5" fill="#212121"/>
+                <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Elena Rodriguez</div>
               <div class="voice-bio">Storyteller & voice artist</div>
@@ -433,24 +496,35 @@
         <h2>Who to Follow</h2>
         <div class="voices-list">
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=4" alt="User avatar" class="post-avatar">
+            <div class="bitmoji-container post-avatar" data-bitmoji="david">
+              <svg viewBox="0 0 100 100" class="bitmoji">
+                <circle cx="50" cy="50" r="45" fill="#FFE0B2"/>
+                <path d="M20 30 h60 v15 q-30 20 -60 0 v-15" fill="#424242"/>
+                <circle cx="35" cy="40" r="5" fill="#212121"/>
+                <circle cx="65" cy="40" r="5" fill="#212121"/>
+                <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+                <rect x="20" y="20" width="60" height="5" fill="#F57C00"/>
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">David Kim</div>
               <div class="voice-bio">Audio engineer & creator</div>
             </div>
           </div>
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=5" alt="User avatar" class="post-avatar">
+            <div class="bitmoji-container post-avatar" data-bitmoji="maya">
+              <svg viewBox="0 0 100 100" class="bitmoji">
+                <circle cx="50" cy="50" r="45" fill="#FFCCBC"/>
+                <path d="M15 35 q35 -20 70 0" fill="#795548" stroke="none"/>
+                <circle cx="35" cy="40" r="5" fill="#212121"/>
+                <circle cx="65" cy="40" r="5" fill="#212121"/>
+                <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="50" cy="25" r="8" fill="#FF9800"/>
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Maya Patel</div>
               <div class="voice-bio">Voice coach & mentor</div>
-            </div>
-          </div>
-          <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=6" alt="User avatar" class="post-avatar">
-            <div class="voice-info">
-              <div class="voice-name">Alex Thompson</div>
-              <div class="voice-bio">Sound designer & artist</div>
             </div>
           </div>
         </div>
@@ -475,6 +549,7 @@
   </div>
 
   <!-- Link to external JavaScript -->
+  <script src="bitmojis.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo | Live Rooms</title>
+  <style>
+    :root {
+  --bg-dark: #0d1117;
+  --bg-light: #f0f2f5;
+  --accent: #3b82f6;
+  --happy: #fbbf24;
+  --calm: #38bdf8;
+  --excited: #f87171;
+  --text-dark: #1f2937;
+  --text-light: #e5e7eb;
+}
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 70px;
+      height: 100vh;
+      background-color: #161b22;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+    }
+
+    .sidebar svg {
+      margin: 20px 0;
+      fill: var(--text-light);
+      cursor: pointer;
+    }
+
+    main {
+      margin-left: 70px;
+      padding: 2rem;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+    }
+
+    .create-room-btn {
+      background-color: var(--accent);
+      color: white;
+      padding: 0.7rem 1.4rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tabs button {
+      background: transparent;
+      border: 1px solid #444;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .room-card {
+      background-color: #13171f;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .room-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .room-card h3 {
+      margin-top: 0;
+      color: white;
+    }
+
+    .room-card p {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0 1rem;
+    }
+
+    .tag {
+      background-color: #2e2e3e;
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+    }
+
+    .badge {
+      background-color: var(--happy);
+      color: #1a1a1a;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      float: right;
+    }
+
+    .room-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-top: 1rem;
+    }
+      .vertical-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 60px;
+      height: 100vh;
+      background-color: #0b0e13;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 1rem;
+      z-index: 999;
+    }
+
+    .vertical-nav a {
+      margin: 1.2rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .vertical-nav a:hover,
+    .vertical-nav a.active {
+      background-color: var(--accent);
+    }
+
+    .main-content {
+      margin-left: 60px;
+    }
+</style>
+</head>
+<body>
+  <div class="vertical-nav">
+    <a href="#" class="active" title="Home">🏠</a>
+    <a href="#" title="Explore">🔍</a>
+    <a href="#" title="Notifications">🔔</a>
+    <a href="#" title="Messages">✉️</a>
+    <a href="#" title="Communities">📘</a>
+    <a href="#" title="Voice Stories">📢</a>
+    <a href="#" title="Bookmarks">🔖</a>
+    <a href="#" title="Profile">👤</a>
+  </div>
+  <div class="main-content">
+  <div class="sidebar">
+    <svg height="24" width="24" viewBox="0 0 24 24"><path d="M3 12l18-12v24z"/></svg>
+    <svg height="24" width="24" viewBox="0 0 24 24"><path d="M3 3h18v2H3zM3 10h18v2H3zM3 17h18v2H3z"/></svg>
+  </div>
+  <main>
+    <div class="header">
+      <h1>Live Echo Rooms</h1>
+      <button class="create-room-btn">+ Create Room</button>
+    </div>
+
+    <div class="tabs">
+      <button>All Rooms</button>
+      <button>Popular</button>
+      <button>Following</button>
+    </div>
+
+    <div class="room-grid">
+      <a href="room.html" class="room-card">
+        <h3>Morning Vibes <span class="badge">😊 Happy</span></h3>
+        <p>Start your day with positive energy</p>
+        <div class="tags">
+          <span class="tag">Music</span>
+          <span class="tag">Positivity</span>
+          <span class="tag">Morning</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 12 participants</span>
+          <span>🎧 34 listeners</span>
+        </div>
+      </a>
+
+      <a href="room.html" class="room-card">
+        <h3>Deep Discussions <span class="badge" style="background: var(--calm);">😌 Calm</span></h3>
+        <p>Philosophical talks about life and meaning</p>
+        <div class="tags">
+          <span class="tag">Philosophy</span>
+          <span class="tag">Debate</span>
+          <span class="tag">Mindfulness</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 5 participants</span>
+          <span>🎧 22 listeners</span>
+        </div>
+      </a>
+
+      <a href="room.html" class="room-card">
+        <h3>Tech Talk <span class="badge" style="background: var(--excited);">🔥 Excited</span></h3>
+        <p>Latest news and trends in technology</p>
+        <div class="tags">
+          <span class="tag">Technology</span>
+          <span class="tag">Innovation</span>
+          <span class="tag">Future</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 8 participants</span>
+          <span>🎧 15 listeners</span>
+        </div>
+      </a>
+
+      <a href="room.html" class="room-card">
+        <h3>Creative Corner <span class="badge">😊 Happy</span></h3>
+        <p>Share your art and creative processes</p>
+        <div class="tags">
+          <span class="tag">Art</span>
+          <span class="tag">Creativity</span>
+          <span class="tag">Inspiration</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 7 participants</span>
+          <span>🎧 19 listeners</span>
+        </div>
+      </a>
+          <a href="room.html" class="room-card">
+        <h3>Startup Talks <span class="badge" style="background: var(--excited);">🚀 Excited</span></h3>
+        <p>Sharing founder stories and startup journeys</p>
+        <div class="tags">
+          <span class="tag">Startups</span>
+          <span class="tag">Pitch</span>
+          <span class="tag">Funding</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 10 participants</span>
+          <span>🎧 28 listeners</span>
+        </div>
+      </a>
+
+      <a href="room.html" class="room-card">
+        <h3>Book Club Live <span class="badge">📚 Happy</span></h3>
+        <p>Discuss this week's pick with fellow readers</p>
+        <div class="tags">
+          <span class="tag">Books</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Community</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 9 participants</span>
+          <span>🎧 31 listeners</span>
+        </div>
+      </a>
+
+      <a href="room.html" class="room-card">
+        <h3>Zen Meditation <span class="badge" style="background: var(--calm);">🧘 Calm</span></h3>
+        <p>Join for a live guided meditation session</p>
+        <div class="tags">
+          <span class="tag">Zen</span>
+          <span class="tag">Wellness</span>
+          <span class="tag">Relax</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 6 participants</span>
+          <span>🎧 20 listeners</span>
+        </div>
+      </a>
+
+      <a href="room.html" class="room-card">
+        <h3>Indie Music Showcase <span class="badge">🎶 Happy</span></h3>
+        <p>Featuring the latest in indie & underground sounds</p>
+        <div class="tags">
+          <span class="tag">Music</span>
+          <span class="tag">Indie</span>
+          <span class="tag">Live</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 11 participants</span>
+          <span>🎧 35 listeners</span>
+        </div>
+      </a>
+
+      <a href="room.html" class="room-card">
+        <h3>Night Owl Coding <span class="badge" style="background: var(--calm);">🌙 Calm</span></h3>
+        <p>Silent co-working session for developers</p>
+        <div class="tags">
+          <span class="tag">Coding</span>
+          <span class="tag">Focus</span>
+          <span class="tag">Night</span>
+        </div>
+        <div class="room-meta">
+          <span>👥 4 participants</span>
+          <span>🎧 12 listeners</span>
+        </div>
+      </a>
+    </div>
+  </main>
+  </div>
+</body>
+</html>

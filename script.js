@@ -226,27 +226,14 @@ function renderFeedItems(dataArray) {
     const userDiv = document.createElement("div");
     userDiv.classList.add("feed-user");
     
-    const avatar = document.createElement("div");
-    avatar.classList.add("avatar");
-    const avatarImg = document.createElement("img");
-    avatarImg.loading = "lazy"; // Enable lazy loading for images
-    avatarImg.src = `https://i.pravatar.cc/150?img=${item.id}`;
-    avatarImg.alt = `${item.userName}'s avatar`;
-    
-    // Create skeleton loading state
-    const skeleton = document.createElement('div');
-    skeleton.classList.add('skeleton');
-    avatar.appendChild(skeleton);
-    
-    // Handle image load
-    avatarImg.onload = () => {
-      skeleton.remove();
-      avatar.appendChild(avatarImg);
-    };
-    
-    userDiv.appendChild(avatar);
+    // Create Bitmoji avatar
+    const avatarContainer = document.createElement('div');
+    avatarContainer.className = 'bitmoji-container post-avatar';
+    avatarContainer.innerHTML = getBitmoji(item.bitmoji || 'default');
     
     const userInfo = document.createElement("div");
+    userInfo.classList.add("user-info");
+    
     const userName = document.createElement("div");
     userName.classList.add("feed-user-name");
     userName.textContent = item.userName;
@@ -257,12 +244,13 @@ function renderFeedItems(dataArray) {
     
     userInfo.appendChild(userName);
     userInfo.appendChild(timeAgo);
+    
+    userDiv.appendChild(avatarContainer);
     userDiv.appendChild(userInfo);
     
-    const emotionBadge = document.createElement("span");
-    emotionBadge.classList.add("emotion-badge");
+    const emotionBadge = document.createElement("div");
+    emotionBadge.classList.add("emotion-badge", item.emotion.toLowerCase());
     emotionBadge.textContent = item.emotion;
-    emotionBadge.setAttribute("aria-label", `Emotion: ${item.emotion}`);
     
     headerDiv.appendChild(userDiv);
     headerDiv.appendChild(emotionBadge);
@@ -749,6 +737,19 @@ function init() {
 
   // Initialize profile view functionality
   initProfileView();
+
+  // Initialize live room navigation
+  initializeLiveRoomNavigation();
+
+  // Add live room navigation
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (link.querySelector('span.material-symbols-outlined').textContent === 'campaign') {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'liveroom.html';
+      });
+    }
+  });
 }
 
 window.addEventListener("DOMContentLoaded", init);
@@ -1576,7 +1577,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ... rest of the initialization code ...
+  // Initialize live room navigation
+  initializeLiveRoomNavigation();
 });
 
 function initializeActionButtons() {
@@ -1648,6 +1650,12 @@ function handleRepost(postId) {
 
 // Profile View Functionality
 function initProfileView() {
+  // Hide live room banner and show profile content
+  const liveRoomBanner = document.querySelector('.live-room-banner');
+  if (liveRoomBanner) {
+    liveRoomBanner.style.display = 'none';
+  }
+
   // Profile data
   const profileData = {
     name: "Alex Morgan",
@@ -2026,3 +2034,233 @@ previewStyles.textContent = `
 `;
 
 document.head.appendChild(previewStyles);
+
+// Add this at the beginning of the file after other imports
+document.head.insertAdjacentHTML('beforeend', '<script src="bitmojis.js"></script>');
+
+// Update the createFeedItem function to use Bitmojis
+function createFeedItem(item) {
+  const feedItem = document.createElement('div');
+  feedItem.className = 'card';
+  
+  const header = document.createElement('div');
+  header.className = 'feed-header';
+  
+  const userSection = document.createElement('div');
+  userSection.className = 'feed-user';
+  
+  // Create Bitmoji avatar
+  const avatarContainer = document.createElement('div');
+  avatarContainer.className = 'bitmoji-container post-avatar';
+  avatarContainer.innerHTML = getBitmoji(item.bitmoji || 'default');
+  
+  const userInfo = document.createElement('div');
+  userInfo.className = 'user-info';
+  
+  const userName = document.createElement('div');
+  userName.className = 'feed-user-name';
+  userName.textContent = item.userName;
+  
+  const timeStamp = document.createElement('div');
+  timeStamp.className = 'feed-time';
+  timeStamp.textContent = item.time;
+  
+  userInfo.appendChild(userName);
+  userInfo.appendChild(timeStamp);
+  
+  userSection.appendChild(avatarContainer);
+  userSection.appendChild(userInfo);
+  
+  const emotionBadge = document.createElement('div');
+  emotionBadge.className = `emotion-badge ${item.emotion.toLowerCase()}`;
+  emotionBadge.textContent = item.emotion;
+  
+  header.appendChild(userSection);
+  header.appendChild(emotionBadge);
+  
+  // Audio area with title
+  const audioContainer = document.createElement("div");
+  audioContainer.classList.add("audio-container");
+  
+  const audioTitle = document.createElement("div");
+  audioTitle.classList.add("audio-title");
+  audioTitle.textContent = item.audioTitle;
+  audioContainer.appendChild(audioTitle);
+  
+  const audioElem = document.createElement("audio");
+  audioElem.controls = true;
+  audioElem.src = item.audioUrl;
+  audioElem.classList.add("audio-controls");
+  audioElem.setAttribute("aria-label", `${item.userName}'s audio message: ${item.audioTitle}`);
+  audioElem.preload = "metadata"; // Only load metadata initially
+  audioContainer.appendChild(audioElem);
+  
+  // Add loading indicator for audio
+  const loadingIndicator = document.createElement("div");
+  loadingIndicator.classList.add("audio-loading");
+  loadingIndicator.textContent = "Loading audio...";
+  audioContainer.appendChild(loadingIndicator);
+  
+  // Handle audio events
+  audioElem.addEventListener("loadeddata", () => {
+    loadingIndicator.style.display = "none";
+  });
+  
+  audioElem.addEventListener("error", () => {
+    loadingIndicator.textContent = "Error loading audio";
+    loadingIndicator.classList.add("error");
+  });
+  
+  // Actions
+  const actionsDiv = document.createElement("div");
+  actionsDiv.classList.add("feed-actions");
+  
+  const likeBtn = document.createElement("button");
+  const isLiked = state.likes.has(item.id);
+  likeBtn.setAttribute("aria-label", isLiked ? "Unlike this post" : "Like this post");
+  likeBtn.innerHTML = `<span class="material-symbols-outlined" style="color: ${isLiked ? '#e74c3c' : '#666'}">${isLiked ? 'favorite' : 'favorite_border'}</span> ${isLiked ? 'Liked' : 'Like'}`;
+  likeBtn.addEventListener("click", () => toggleLike(item.id));
+  
+  const replyBtn = document.createElement("button");
+  replyBtn.setAttribute("aria-label", "Reply to this post");
+  replyBtn.innerHTML = `<span class="material-symbols-outlined">chat</span> Reply`;
+  
+  actionsDiv.appendChild(likeBtn);
+  actionsDiv.appendChild(replyBtn);
+  
+  // Replies section
+  if (item.replies && item.replies.length > 0) {
+    const repliesContainer = document.createElement("div");
+    repliesContainer.classList.add("replies-container");
+    
+    const repliesTitle = document.createElement("div");
+    repliesTitle.classList.add("replies-title");
+    repliesTitle.textContent = "Replies";
+    repliesContainer.appendChild(repliesTitle);
+    
+    item.replies.forEach(reply => {
+      const replyDiv = document.createElement("div");
+      replyDiv.classList.add("reply-item");
+      
+      const replyHeader = document.createElement("div");
+      replyHeader.classList.add("reply-header");
+      
+      const replyUserName = document.createElement("span");
+      replyUserName.classList.add("reply-username");
+      replyUserName.textContent = reply.userName;
+      
+      const replyTime = document.createElement("span");
+      replyTime.classList.add("reply-time");
+      replyTime.textContent = reply.time;
+      
+      replyHeader.appendChild(replyUserName);
+      replyHeader.appendChild(replyTime);
+      
+      const replyText = document.createElement("div");
+      replyText.classList.add("reply-text");
+      replyText.textContent = reply.text;
+      
+      replyDiv.appendChild(replyHeader);
+      replyDiv.appendChild(replyText);
+      repliesContainer.appendChild(replyDiv);
+    });
+    
+    card.appendChild(actionsDiv);
+    card.appendChild(repliesContainer);
+  } else {
+    card.appendChild(actionsDiv);
+  }
+  
+  // Append header and audio container to card
+  card.appendChild(header);
+  card.appendChild(audioContainer);
+  
+  // Add card to feed
+  feedContainer.appendChild(card);
+}
+
+// Update the sample feed data to include Bitmoji types
+const sampleFeedData = [
+  {
+    id: 1,
+    userName: "Sarah Chen",
+    time: "2h",
+    content: "The new AI features we're adding to the platform are mind-blowing! Check out this demo...",
+    emotion: "EXCITED",
+    bitmoji: "sarah",
+    likes: 128,
+    comments: 24,
+    shares: 12
+  },
+  {
+    id: 2,
+    userName: "Marcus Johnson",
+    time: "3h",
+    content: "Just released our latest design system update. The components are so much more flexible now!",
+    emotion: "JOY",
+    bitmoji: "marcus",
+    likes: 89,
+    comments: 15,
+    shares: 8
+  },
+  {
+    id: 3,
+    userName: "Elena Rodriguez",
+    time: "4h",
+    content: "Reflecting on our user research findings. Some fascinating insights about how people use voice interfaces.",
+    emotion: "CALM",
+    bitmoji: "elena",
+    likes: 156,
+    comments: 32,
+    shares: 18
+  }
+];
+
+// Live Room Navigation Handler
+function initializeLiveRoomNavigation() {
+  // Handle nav bar live room link
+  const liveRoomLink = document.querySelector('.nav-link span.material-symbols-outlined[innerHTML="campaign"]').parentElement;
+  if (liveRoomLink) {
+    liveRoomLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.location.href = 'liveroom.html';
+    });
+  }
+
+  // Handle join room button if it exists
+  const joinRoomBtn = document.querySelector('.join-room-btn');
+  if (joinRoomBtn) {
+    joinRoomBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.location.href = 'liveroom.html';
+    });
+  }
+}
+
+// Add this at the beginning of the file, right after the CONFIG object
+document.addEventListener('click', function(e) {
+  // Check if clicked element is the live room link or its children
+  const liveRoomLink = e.target.closest('.nav-link');
+  if (liveRoomLink && liveRoomLink.querySelector('span.material-symbols-outlined').textContent === 'campaign') {
+    e.preventDefault();
+    window.location.href = 'liveroom.html';
+  }
+});
+
+function generateWaveform() {
+  const waveform = document.createElement('div');
+  waveform.className = 'waveform';
+  
+  // Generate bars for the waveform
+  for (let i = 0; i < 40; i++) {
+    const height = Math.floor(Math.random() * 40) + 10;
+    const bar = document.createElement('div');
+    bar.className = 'waveform-bar';
+    bar.style.height = `${height}px`;
+    // Add bar index for staggered animation
+    bar.style.setProperty('--bar-index', i);
+    waveform.appendChild(bar);
+  }
+  
+  return waveform;
+}
