@@ -1,2266 +1,2676 @@
-/*
- * Echo App - Voice Messaging Application
- * Features:
- * - Audio recording and playback
- * - Emotion detection
- * - Feed management
- * - User authentication
- * - Pagination
- */
+/******************
+ *  SIMPLE ECHO APP SIMULATION
+ *  - Handles audio recording (MediaRecorder)
+ *  - Simulates emotion detection
+ *  - Displays feed items
+ ******************/
 
-// ======== CONFIGURATION ========
-const CONFIG = {
-  apiUrl: 'https://api.echo-app.com', // Replace with your actual API endpoint
-  itemsPerPage: 10,
-  maxRecordingDuration: 60, // seconds
-  supportedEmotions: [
-    { label: "EXCITED", color: "#FF4D8D" },  // Pink from the image
-    { label: "JOY", color: "#E65100" },      // Very dark orange
-    { label: "CALM", color: "#4DD0E1" },     // Light blue from the image
-    { label: "ANNOYED", color: "#FF6B6B" },  // Coral red from the image
-    { label: "SAD", color: "#7C4DFF" }       // Purple from the image
-  ]
-};
-
-// ======== STATE MANAGEMENT ========
-const state = {
-  currentUser: null,
-  isAuthenticated: false,
-  currentTab: 'foryou',
-  currentPage: 1,
-  feedData: [],
-  isLoading: false,
-  error: null,
-  audioStreams: [],
-  audioUrls: [],
-  likes: new Set(), // Track liked posts
-  totalItems: 0,
-  isRecording: false,
-  mediaRecorder: null,
-  audioChunks: [],
-  selectedEmotion: null
-};
-
-// ======== DOM ELEMENTS ========
-const tabButtons = document.querySelectorAll(".tab-btn");
-const recordButton = document.getElementById("recordButton");
-const stopButton = document.getElementById("stopButton");
-const statusText = document.getElementById("status");
-const feedContainer = document.getElementById("feedContainer");
-
-const paginationContainer = document.createElement("div");
-paginationContainer.classList.add("pagination");
-feedContainer.parentNode.insertBefore(paginationContainer, feedContainer.nextSibling);
-
-// Add scroll progress tracking
-const scrollProgress = document.createElement('div');
-scrollProgress.classList.add('scroll-progress');
-const scrollProgressBar = document.createElement('div');
-scrollProgressBar.classList.add('scroll-progress-bar');
-scrollProgress.appendChild(scrollProgressBar);
-document.body.appendChild(scrollProgress);
-
-// Use a separate variable for infinite scroll loading
-let infiniteLoading = false;
-let hasMoreItems = true;
-
-// ======== SCROLL EVENT ========
-window.addEventListener('scroll', () => {
-  // Update progress bar using a template literal
-  const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-  scrollProgressBar.style.width = `${Math.min(scrolled, 100)}%`;
+/* ======== COLOR VARIABLES ======== */
+:root {
+  /* Light mode (default) colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F7F9F9;
+  --text-primary: #0F1419;
+  --text-secondary: #536471;
+  --border-color: #EFF3F4;
+  --card-bg: #FFFFFF;
+  --nav-bg: #FFFFFF;
+  --emotion-badge-bg: #F7F9F9;
+  --bg-accent: rgba(29, 161, 242, 0.1);
   
-  // Check for infinite scroll
-  if (!infiniteLoading && hasMoreItems && 
-      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500) {
-    loadMoreItems();
-  }
-});
-
-// ======== HELPER FUNCTION ========
-function showError(message) {
-  // Simple error helper (you could improve this to show a modal or a toast)
-  alert(message);
-}
-
-// ======== AUTHENTICATION ========
-function showAuthModal(isSignUp = false) {
-  const modal = document.getElementById('authModal');
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
-}
-
-function closeAuthModal() {
-  const modal = document.getElementById('authModal');
-  modal.style.display = 'none';
-  document.body.style.overflow = 'auto'; // Re-enable scrolling
-}
-
-// Close modal when clicking outside
-document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('authModal');
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeAuthModal();
-    }
-  });
-});
-
-function login(email, password) {
-  // Simulated login (replace with real API call in production)
-  state.isAuthenticated = true;
-  state.currentUser = { id: 1, name: "Demo User", email };
-  document.querySelector(".auth-modal").remove();
-  updateUI();
-  fetchFeedData();
-}
-
-function signup(email, password) {
-  // Simulated signup
-  state.isAuthenticated = true;
-  state.currentUser = { id: 1, name: "Demo User", email };
-  document.querySelector(".auth-modal").remove();
-  updateUI();
-  fetchFeedData();
-}
-
-function logout() {
-  state.isAuthenticated = false;
-  state.currentUser = null;
-  updateUI();
-}
-
-// ======== DATA FETCHING ========
-async function fetchFeedData(isInitial = true) {
-  if (isInitial) {
-    state.isLoading = true;
-    updateUI();
-  } else {
-    showLoadingIndicator();
-  }
+  /* Accent Colors */
+  --primary: #1DA1F2;
+  --primary-light: #E8F5FE;
+  --primary-dark: #D63484;
   
-  try {
-    const response = await simulateApiCall({
-      data: generateMockData(state.currentPage),
-      total: 100 // Simulate larger dataset
-    });
-    
-    if (isInitial) {
-      state.feedData = response.data;
-    } else {
-      state.feedData = [...state.feedData, ...response.data];
-    }
-    
-    state.totalItems = response.total;
-    state.error = null;
-    hasMoreItems = state.feedData.length < state.totalItems;
-  } catch (error) {
-    state.error = "Failed to load feed data. Please try again later.";
-    console.error("Error fetching feed data:", error);
-  } finally {
-    state.isLoading = false;
-    if (!isInitial) {
-      hideLoadingIndicator();
-    }
-    updateUI();
+  /* Emotion Colors */
+  --emotion-excited: #FF4D8D;
+  --emotion-joy: #FF7043;
+  --emotion-calm: #4DD0E1;
+  --emotion-annoyed: #EF4444;
+  --emotion-sad: #7C4DFF;
+  
+  /* Border Colors */
+  --border-light: rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(255, 75, 145, 0.5);
+}
+
+/* Dark mode colors */
+[data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8899A6;
+  --border-color: #2F3336;
+  --card-bg: #000000;
+  --nav-bg: #000000;
+  --emotion-badge-bg: #1A1A1A;
+  
+  /* Dark mode specific overrides */
+  --primary-light: rgba(29, 161, 242, 0.1);
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(255, 255, 255, 0.2);
+}
+
+/* ======== BASIC RESET & GLOBAL ======== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  background-image: 
+    radial-gradient(circle at 100% 0%, var(--bg-accent) 0%, transparent 20%),
+    radial-gradient(circle at 0% 100%, var(--bg-accent) 0%, transparent 20%);
+  background-attachment: fixed;
+  line-height: 1.4;
+}
+
+/* ======== NAVBAR ======== */
+.navbar {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  height: 60px;
+  padding: 0 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.logo {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0 12px;
+  color: var(--primary);
+}
+
+.echo-logo {
+  width: 100%;
+  height: 100%;
+}
+
+.echo-logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Sound wave styles */
+.sound-wave {
+  fill: currentColor;
+}
+
+.sound-wave rect {
+  transform-origin: bottom;
+  animation: waveAnimation 1.2s ease-in-out infinite;
+}
+
+/* Logo text styles */
+.logo-text {
+  font-family: 'Arial', sans-serif;
+  font-size: 42px;
+  font-weight: 500;
+  font-style: italic;
+  fill: currentColor;
+}
+
+.logo-subtext {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  fill: currentColor;
+  text-transform: uppercase;
+}
+
+/* Wave animation timing - slightly faster */
+.sound-wave rect:nth-child(1) { animation-delay: 0.0s; }
+.sound-wave rect:nth-child(2) { animation-delay: 0.15s; }
+.sound-wave rect:nth-child(3) { animation-delay: 0.3s; }
+.sound-wave rect:nth-child(4) { animation-delay: 0.45s; }
+.sound-wave rect:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes waveAnimation {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.5);
   }
 }
 
-function simulateApiCall(response) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(response);
-    }, 1000);
-  });
+/* Dark mode adjustments */
+[data-theme="dark"] .logo {
+  color: white;
 }
 
-// ======== UI UPDATES ========
-function updateUI() {
-  // Update auth UI
-  const navIcons = document.querySelector(".nav-icons");
-  if (state.isAuthenticated) {
-    navIcons.innerHTML = `
-      <span class="material-symbols-outlined" aria-label="Search">search</span>
-      <span class="material-symbols-outlined" aria-label="Profile">person</span>
-      <button onclick="logout()" aria-label="Logout">Logout</button>
-    `;
-  } else {
-    navIcons.innerHTML = `
-      <span class="material-symbols-outlined" aria-label="Search">search</span>
-      <button onclick="showAuthModal(true)" aria-label="Login">Login</button>
-    `;
-  }
-  
-  // Update feed
-  if (state.isLoading) {
-    feedContainer.innerHTML = '<div class="loading">Loading feed...</div>';
-    return;
-  }
-  
-  if (state.error) {
-    feedContainer.innerHTML = `<div class="error">${state.error}</div>`;
-    return;
-  }
-  
-  renderFeedItems(state.feedData);
-  renderPagination();
+[data-theme="dark"] .logo-text,
+[data-theme="dark"] .logo-subtext {
+  fill: white;
 }
 
-function renderFeedItems(dataArray) {
-  feedContainer.innerHTML = "";
-  
-  if (dataArray.length === 0) {
-    feedContainer.innerHTML = '<div class="empty-state">No items to display</div>';
-    return;
-  }
-  
-  dataArray.forEach((item) => {
-    // Create feed card
-    const card = document.createElement("div");
-    card.classList.add("card");
-    
-    // Header (user + time + emotion)
-    const headerDiv = document.createElement("div");
-    headerDiv.classList.add("feed-header");
-    
-    const userDiv = document.createElement("div");
-    userDiv.classList.add("feed-user");
-    
-    // Create Bitmoji avatar
-    const avatarContainer = document.createElement('div');
-    avatarContainer.className = 'bitmoji-container post-avatar';
-    avatarContainer.innerHTML = getBitmoji(item.bitmoji || 'default');
-    
-    const userInfo = document.createElement("div");
-    userInfo.classList.add("user-info");
-    
-    const userName = document.createElement("div");
-    userName.classList.add("feed-user-name");
-    userName.textContent = item.userName;
-    
-    const timeAgo = document.createElement("div");
-    timeAgo.classList.add("feed-time");
-    timeAgo.textContent = item.time;
-    
-    userInfo.appendChild(userName);
-    userInfo.appendChild(timeAgo);
-    
-    userDiv.appendChild(avatarContainer);
-    userDiv.appendChild(userInfo);
-    
-    const emotionBadge = document.createElement("div");
-    emotionBadge.classList.add("emotion-badge", item.emotion.toLowerCase());
-    emotionBadge.textContent = item.emotion;
-    
-    headerDiv.appendChild(userDiv);
-    headerDiv.appendChild(emotionBadge);
-    
-    // Audio area with title
-    const audioContainer = document.createElement("div");
-    audioContainer.classList.add("audio-container");
-    
-    const audioTitle = document.createElement("div");
-    audioTitle.classList.add("audio-title");
-    audioTitle.textContent = item.audioTitle;
-    audioContainer.appendChild(audioTitle);
-    
-    const audioElem = document.createElement("audio");
-    audioElem.controls = true;
-    audioElem.src = item.audioUrl;
-    audioElem.classList.add("audio-controls");
-    audioElem.setAttribute("aria-label", `${item.userName}'s audio message: ${item.audioTitle}`);
-    audioElem.preload = "metadata"; // Only load metadata initially
-    audioContainer.appendChild(audioElem);
-    
-    // Add loading indicator for audio
-    const loadingIndicator = document.createElement("div");
-    loadingIndicator.classList.add("audio-loading");
-    loadingIndicator.textContent = "Loading audio...";
-    audioContainer.appendChild(loadingIndicator);
-    
-    // Handle audio events
-    audioElem.addEventListener("loadeddata", () => {
-      loadingIndicator.style.display = "none";
-    });
-    
-    audioElem.addEventListener("error", () => {
-      loadingIndicator.textContent = "Error loading audio";
-      loadingIndicator.classList.add("error");
-    });
-    
-    // Actions
-    const actionsDiv = document.createElement("div");
-    actionsDiv.classList.add("feed-actions");
-    
-    const likeBtn = document.createElement("button");
-    const isLiked = state.likes.has(item.id);
-    likeBtn.setAttribute("aria-label", isLiked ? "Unlike this post" : "Like this post");
-    likeBtn.innerHTML = `<span class="material-symbols-outlined" style="color: ${isLiked ? '#e74c3c' : '#666'}">${isLiked ? 'favorite' : 'favorite_border'}</span> ${isLiked ? 'Liked' : 'Like'}`;
-    likeBtn.addEventListener("click", () => toggleLike(item.id));
-    
-    const replyBtn = document.createElement("button");
-    replyBtn.setAttribute("aria-label", "Reply to this post");
-    replyBtn.innerHTML = `<span class="material-symbols-outlined">chat</span> Reply`;
-    
-    actionsDiv.appendChild(likeBtn);
-    actionsDiv.appendChild(replyBtn);
-    
-    // Replies section
-    if (item.replies && item.replies.length > 0) {
-      const repliesContainer = document.createElement("div");
-      repliesContainer.classList.add("replies-container");
-      
-      const repliesTitle = document.createElement("div");
-      repliesTitle.classList.add("replies-title");
-      repliesTitle.textContent = "Replies";
-      repliesContainer.appendChild(repliesTitle);
-      
-      item.replies.forEach(reply => {
-        const replyDiv = document.createElement("div");
-        replyDiv.classList.add("reply-item");
-        
-        const replyHeader = document.createElement("div");
-        replyHeader.classList.add("reply-header");
-        
-        const replyUserName = document.createElement("span");
-        replyUserName.classList.add("reply-username");
-        replyUserName.textContent = reply.userName;
-        
-        const replyTime = document.createElement("span");
-        replyTime.classList.add("reply-time");
-        replyTime.textContent = reply.time;
-        
-        replyHeader.appendChild(replyUserName);
-        replyHeader.appendChild(replyTime);
-        
-        const replyText = document.createElement("div");
-        replyText.classList.add("reply-text");
-        replyText.textContent = reply.text;
-        
-        replyDiv.appendChild(replyHeader);
-        replyDiv.appendChild(replyText);
-        repliesContainer.appendChild(replyDiv);
-      });
-      
-      card.appendChild(actionsDiv);
-      card.appendChild(repliesContainer);
-    } else {
-      card.appendChild(actionsDiv);
-    }
-    
-    // Append header and audio container to card
-    card.appendChild(headerDiv);
-    card.appendChild(audioContainer);
-    
-    // Add card to feed
-    feedContainer.appendChild(card);
-  });
+.nav-icons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px 16px;
 }
 
-function renderPagination() {
-  if (!state.totalItems) return;
-  
-  const totalPages = Math.ceil(state.totalItems / CONFIG.itemsPerPage);
-  paginationContainer.innerHTML = "";
-  
-  // Previous button
-  const prevBtn = document.createElement("button");
-  prevBtn.textContent = "Previous";
-  prevBtn.disabled = state.currentPage === 1;
-  prevBtn.addEventListener("click", () => {
-    if (state.currentPage > 1) {
-      state.currentPage--;
-      fetchFeedData();
-    }
-  });
-  paginationContainer.appendChild(prevBtn);
-  
-  // Page buttons
-  for (let i = 1; i <= totalPages; i++) {
-    const pageBtn = document.createElement("button");
-    pageBtn.textContent = i;
-    pageBtn.classList.toggle("active", i === state.currentPage);
-    pageBtn.addEventListener("click", () => {
-      state.currentPage = i;
-      fetchFeedData();
-    });
-    paginationContainer.appendChild(pageBtn);
-  }
-  
-  // Next button
-  const nextBtn = document.createElement("button");
-  nextBtn.textContent = "Next";
-  nextBtn.disabled = state.currentPage === totalPages;
-  nextBtn.addEventListener("click", () => {
-    if (state.currentPage < totalPages) {
-      state.currentPage++;
-      fetchFeedData();
-    }
-  });
-  paginationContainer.appendChild(nextBtn);
+.nav-icons button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-weight: 500;
 }
 
-// ======== TAB HANDLER ========
-function handleTabClick(e) {
-  // Remove active class from all tabs
-  tabButtons.forEach((btn) => btn.classList.remove("active"));
-  
-  // Add active class to clicked tab
-  e.target.classList.add("active");
-  
-  // Update state and fetch data
-  state.currentTab = e.target.dataset.tab;
-  state.currentPage = 1; // Reset to first page when changing tabs
-  fetchFeedData();
+/* Sign Up button specific styles */
+.nav-icons .signup-btn {
+  background: var(--bg-secondary);
+  color: var(--primary);
+  border: none;
 }
 
-// ======== RECORDING FUNCTIONS ========
-function updateRecordingUI() {
-  const recordButton = document.getElementById('recordButton');
-  const stopButton = document.getElementById('stopButton');
-  const playButton = document.getElementById('playButton');
-  const shareButton = document.getElementById('shareButton');
-  const statusText = document.getElementById('status');
-  
-  if (recordButton && stopButton) {
-    if (state.isRecording) {
-      recordButton.style.display = 'none';
-      stopButton.style.display = 'block';
-      stopButton.disabled = false;
-      playButton.disabled = true;
-      shareButton.disabled = true;
-      statusText.textContent = 'Recording...';
-    } else {
-      recordButton.style.display = 'block';
-      stopButton.style.display = 'none';
-      stopButton.disabled = true;
-      playButton.disabled = false;
-      shareButton.disabled = false;
-      statusText.textContent = 'Recording stopped';
-    }
-  }
+.nav-icons .signup-btn:hover {
+  background: rgba(255,255,255,0.9);
+  transform: translateY(-1px);
 }
 
-async function startRecording() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    state.mediaRecorder = new MediaRecorder(stream);
-    state.audioChunks = [];
-    
-    state.mediaRecorder.addEventListener('dataavailable', (event) => {
-      state.audioChunks.push(event.data);
-    });
-    
-    state.mediaRecorder.addEventListener('stop', () => {
-      const audioBlob = new Blob(state.audioChunks, { type: 'audio/wav' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      state.audioUrls.push(audioUrl); // Store URL for cleanup
-      
-      const audioPreview = document.createElement('audio');
-      audioPreview.src = audioUrl;
-      audioPreview.controls = true;
-      
-      const previewContainer = document.querySelector('.audio-preview') || document.createElement('div');
-      previewContainer.className = 'audio-preview';
-      previewContainer.innerHTML = '';
-      previewContainer.appendChild(audioPreview);
-      
-      const composer = document.querySelector('.voice-composer');
-      if (!document.querySelector('.audio-preview')) {
-        composer.insertBefore(previewContainer, composer.querySelector('.composer-footer'));
-      }
-      
-      document.getElementById('shareButton').disabled = false;
-    });
-    
-    state.mediaRecorder.start();
-    state.isRecording = true;
-    updateRecordingUI();
-  } catch (error) {
-    console.error('Error accessing microphone:', error);
-    alert('Unable to access microphone. Please check your permissions.');
-  }
+/* Login button specific styles */
+.nav-icons .login-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--text-primary);
 }
 
-function stopRecording() {
-  if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
-    state.mediaRecorder.stop();
-    state.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-    state.isRecording = false;
-    updateRecordingUI();
-    showRecordingPreview();
-  }
+.nav-icons .login-btn:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-1px);
 }
 
-function showRecordingPreview() {
-  const previewDialog = document.createElement('div');
-  previewDialog.className = 'recording-preview-dialog';
-  
-  const audioBlob = new Blob(state.audioChunks, { type: 'audio/wav' });
-  const audioUrl = URL.createObjectURL(audioBlob);
-  state.audioUrls.push(audioUrl);
-
-  previewDialog.innerHTML = `
-    <div class="preview-content">
-      <div class="preview-header">
-        <div class="user-info">
-          <img src="https://i.pravatar.cc/150?img=12" alt="Your profile picture" class="user-avatar">
-          <div class="user-details">
-            <span class="user-name">You</span>
-            <span class="preview-label">Preview your voice note</span>
-          </div>
-        </div>
-        <button class="close-preview" aria-label="Close preview">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      
-      <div class="audio-preview">
-        <div class="audio-player">
-          <button class="play-button">
-            <span class="material-symbols-outlined">play_arrow</span>
-          </button>
-          <div class="waveform">
-            <audio src="${audioUrl}" style="display: none;"></audio>
-            <div class="time-display">0:00</div>
-            <div class="progress-bar">
-              <div class="progress-fill"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="preview-actions">
-        <div class="action-group">
-          <button class="edit-btn action-btn">
-            <span class="material-symbols-outlined">edit</span>
-            Edit
-          </button>
-          <button class="post-btn action-btn">
-            <span class="material-symbols-outlined">send</span>
-            Post
-          </button>
-        </div>
-        <button class="save-btn action-btn">
-          <span class="material-symbols-outlined">bookmark</span>
-          Save Draft
-        </button>
-        <button class="discard-btn action-btn">
-          <span class="material-symbols-outlined">delete</span>
-          Discard
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(previewDialog);
-
-  const audio = previewDialog.querySelector('audio');
-  const timeDisplay = previewDialog.querySelector('.time-display');
-  const progressBar = previewDialog.querySelector('.progress-bar');
-  const progressFill = previewDialog.querySelector('.progress-fill');
-  const playButton = previewDialog.querySelector('.play-button');
-  const closeBtn = previewDialog.querySelector('.close-preview');
-  const discardBtn = previewDialog.querySelector('.discard-btn');
-  const saveBtn = previewDialog.querySelector('.save-btn');
-  const postBtn = previewDialog.querySelector('.post-btn');
-  const editBtn = previewDialog.querySelector('.edit-btn');
-
-  function updatePlayState(isPlaying) {
-    const playIcon = isPlaying ? 'pause' : 'play_arrow';
-    playButton.querySelector('.material-symbols-outlined').textContent = playIcon;
-  }
-
-  function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    seconds = Math.floor(seconds % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
-
-  function playAudio() {
-    audio.play();
-    updatePlayState(true);
-  }
-
-  function pauseAudio() {
-    audio.pause();
-    updatePlayState(false);
-  }
-
-  audio.addEventListener('timeupdate', () => {
-    const progress = (audio.currentTime / audio.duration) * 100;
-    progressFill.style.width = `${progress}%`;
-    timeDisplay.textContent = formatTime(audio.currentTime);
-  });
-
-  audio.addEventListener('ended', () => {
-    updatePlayState(false);
-    progressFill.style.width = '0%';
-    timeDisplay.textContent = '0:00';
-  });
-
-  progressBar.addEventListener('click', (e) => {
-    const rect = progressBar.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    audio.currentTime = pos * audio.duration;
-  });
-
-  playButton.addEventListener('click', () => {
-    if (audio.paused) {
-      playAudio();
-    } else {
-      pauseAudio();
-    }
-  });
-
-  closeBtn.addEventListener('click', () => {
-    pauseAudio();
-    previewDialog.remove();
-  });
-
-  discardBtn.addEventListener('click', () => {
-    pauseAudio();
-    previewDialog.remove();
-    resetRecording();
-  });
-
-  saveBtn.addEventListener('click', () => {
-    pauseAudio();
-    showToast('Saved to drafts!');
-    previewDialog.remove();
-    resetRecording();
-  });
-
-  postBtn.addEventListener('click', () => {
-    pauseAudio();
-    previewDialog.remove();
-    showShareDialog();
-  });
-
-  editBtn.addEventListener('click', () => {
-    showToast('Edit feature coming soon!');
-  });
+/* ======== MAIN CONTAINER ======== */
+.container {
+  display: flex;
+  max-width: 1200px;
+  margin: 20px auto;
+  gap: 20px;
+  padding: 0 20px;
 }
 
-function showToast(message) {
-  const toast = document.createElement('div');
-  toast.className = 'toast-message';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+/* ======== FEED SECTION ======== */
+.feed {
+  flex: 1;
+  max-width: 700px;
 }
 
-// ======== CLEANUP ========
-function cleanup() {
-  // Revoke all object URLs to prevent memory leaks
-  state.audioUrls.forEach(url => {
-    URL.revokeObjectURL(url);
-  });
-  state.audioUrls = [];
-  
-  // Stop all audio streams
-  state.audioStreams.forEach(stream => {
-    stream.getTracks().forEach(track => track.stop());
-  });
-  state.audioStreams = [];
+/* Tabs */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  height: 53px;
 }
 
-// ======== INITIALIZATION ========
-function init() {
-  // Set up tab navigation
-  tabButtons.forEach((btn) => {
-    btn.addEventListener("click", handleTabClick);
-  });
-  
-  // Check for MediaRecorder support
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    statusText.textContent = "MediaRecorder API not supported in this browser.";
-    recordButton.disabled = true;
-  } else {
-    recordButton.addEventListener("click", () => {
-      if (state.mediaRecorder && state.mediaRecorder.state === "recording") {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    });
-    
-    // Keep the explicit stop button
-    stopButton.addEventListener("click", stopRecording);
-  }
-  
-  // Add keyboard navigation to close auth modal on escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && document.querySelector(".auth-modal")) {
-      document.querySelector(".auth-modal").remove();
-    }
-  });
-  
-  // Initial UI update
-  updateUI();
-  
-  // Clean up on page unload
-  window.addEventListener("beforeunload", cleanup);
-  
-  // Initialize intersection observer for lazy loading
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const element = entry.target;
-          if (element.classList.contains('card')) {
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
-            observer.unobserve(element);
-          }
-        }
-      });
-    },
-    {
-      threshold: 0.1,
-      rootMargin: '50px'
-    }
-  );
-  
-  // Observe feed items
-  document.querySelectorAll('.card').forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-    observer.observe(card);
-  });
-  
-  // Dark mode functionality
-  initDarkMode();
-
-  // Share dialog functionality
-  initShareDialog();
-
-  // Initialize profile view functionality
-  initProfileView();
-
-  // Initialize live room navigation
-  initializeLiveRoomNavigation();
-
-  // Add live room navigation
-  document.querySelectorAll('.nav-link').forEach(link => {
-    if (link.querySelector('span.material-symbols-outlined').textContent === 'campaign') {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = 'liveroom.html';
-      });
-    }
-  });
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
 }
 
-window.addEventListener("DOMContentLoaded", init);
-
-// ======== LIKE FUNCTIONALITY ========
-function toggleLike(postId) {
-  const button = document.querySelector(`.voice-post[data-id="${postId}"] .action-btn[aria-label*="Like"]`);
-  const icon = button.querySelector('.material-symbols-outlined');
-  const count = button.querySelector('.action-count');
-  
-  if (state.likes.has(postId)) {
-    state.likes.delete(postId);
-    icon.textContent = 'favorite_border';
-    count.textContent = parseInt(count.textContent) - 1;
-    button.setAttribute('aria-label', 'Like this post');
-  } else {
-    state.likes.add(postId);
-    icon.textContent = 'favorite';
-    count.textContent = parseInt(count.textContent) + 1;
-    button.setAttribute('aria-label', 'Unlike this post');
-  }
+.tab-btn:hover {
+  background-color: var(--bg-secondary);
 }
 
-// ======== MOCK DATA & INFINITE SCROLL ========
-function generateMockData(page) {
-  const startId = (page - 1) * CONFIG.itemsPerPage;
-  return Array.from({ length: CONFIG.itemsPerPage }, (_, index) => ({
-    id: startId + index + 1,
-    userName: `User ${startId + index + 1}`,
-    time: `${Math.floor(Math.random() * 60)} minutes ago`,
-    emotion: CONFIG.supportedEmotions[Math.floor(Math.random() * CONFIG.supportedEmotions.length)].label,
-    audioUrl: "https://www.chosic.com/wp-content/uploads/2023/07/creative_minds.mp3",
-    audioTitle: `Audio Post ${startId + index + 1}`,
-    replies: [
-      { id: (startId + index) * 3 + 1, userName: "User A", text: "Great post!", time: "Just now" },
-      { id: (startId + index) * 3 + 2, userName: "User B", text: "Amazing!", time: "2m ago" },
-      { id: (startId + index) * 3 + 3, userName: "User C", text: "Love it!", time: "5m ago" }
-    ]
-  }));
+.tab-btn.active {
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-function showLoadingIndicator() {
-  const loader = document.createElement('div');
-  loader.classList.add('infinite-scroll-loader');
-  loader.innerHTML = `
-    <div class="spinner"></div>
-    <span>Loading more posts...</span>
-  `;
-  feedContainer.appendChild(loader);
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 4px;
+  background-color: var(--primary);
+  border-radius: 9999px;
 }
 
-function hideLoadingIndicator() {
-  const loader = document.querySelector('.infinite-scroll-loader');
-  if (loader) {
-    loader.remove();
-  }
+/* Share Voice Card */
+.share-voice {
+  background-color: var(--bg-secondary);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
 }
 
-async function loadMoreItems() {
-  if (infiniteLoading || !hasMoreItems) return;
-  
-  infiniteLoading = true;
-  state.currentPage++;
-  await fetchFeedData(false);
-  infiniteLoading = false;
+.share-voice:hover {
+  border-color: var(--border-focus);
+  box-shadow: 0 4px 12px rgba(255, 75, 145, 0.1);
 }
 
-// Tab functionality
-document.addEventListener('DOMContentLoaded', () => {
-  const tabs = document.querySelectorAll('.tab-btn');
-  const feedContainer = document.getElementById('feedContainer');
-
-  // Update the trending data
-  const trendingData = {
-    foryou: [
-      {
-        id: 1,
-        author: 'Alex Johnson',
-        handle: '@alexjohnson',
-        avatar: 'https://i.pravatar.cc/150?img=1',
-        timestamp: '2h',
-        content: 'The new AI features we\'re adding to the platform are mind-blowing! Check out this demo...',
-        emotion: 'EXCITED',
-        audioDuration: '0:45',
-        likes: 128,
-        replies: 24,
-        reposts: 12
-      },
-      {
-        id: 2,
-        author: 'Sarah Williams',
-        handle: '@sarahwilliams',
-        avatar: 'https://i.pravatar.cc/150?img=5',
-        timestamp: '3h',
-        content: 'Just released our latest design system update. The components are so much more flexible now!',
-        emotion: 'JOY',
-        audioDuration: '0:38',
-        likes: 89,
-        replies: 15,
-        reposts: 8
-      },
-      {
-        id: 3,
-        author: 'David Chen',
-        handle: '@davidchen',
-        avatar: 'https://i.pravatar.cc/150?img=11',
-        timestamp: '4h',
-        content: 'Reflecting on our user research findings. Some fascinating insights about how people use voice interfaces.',
-        emotion: 'CALM',
-        audioDuration: '1:05',
-        likes: 342,
-        replies: 45,
-        reposts: 28
-      }
-    ],
-    following: [
-      {
-        id: 4,
-        author: 'Mike Chen',
-        handle: '@mikechen',
-        avatar: 'https://i.pravatar.cc/150?img=3',
-        timestamp: '1h',
-        content: 'Our new voice synthesis model is producing incredibly natural results. Here\'s a sample...',
-        emotion: 'JOY',
-        audioDuration: '0:52',
-        likes: 256,
-        replies: 42,
-        reposts: 28
-      },
-      {
-        id: 5,
-        author: 'Lisa Wang',
-        handle: '@lisawang',
-        avatar: 'https://i.pravatar.cc/150?img=15',
-        timestamp: '2h',
-        content: 'Just deployed a major performance update. Load times are now 50% faster!',
-        emotion: 'EXCITED',
-        audioDuration: '0:33',
-        likes: 189,
-        replies: 23,
-        reposts: 15
-      }
-    ],
-    trending: [
-      {
-        id: 6,
-        author: 'Emma Davis',
-        handle: '@emmadavis',
-        avatar: 'https://i.pravatar.cc/150?img=4',
-        timestamp: '30m',
-        content: 'Breaking: We just hit 1 million active users! Thank you to our amazing community...',
-        emotion: 'EXCITED',
-        audioDuration: '1:15',
-        likes: 1289,
-        replies: 189,
-        reposts: 256
-      },
-      {
-        id: 7,
-        author: 'Ryan Kim',
-        handle: '@ryankim',
-        avatar: 'https://i.pravatar.cc/150?img=17',
-        timestamp: '1h',
-        content: 'The results from our accessibility improvements are in. Engagement is up by 200%!',
-        emotion: 'JOY',
-        audioDuration: '0:48',
-        likes: 892,
-        replies: 145,
-        reposts: 178
-      },
-      {
-        id: 8,
-        author: 'Sophie Taylor',
-        handle: '@sophietaylor',
-        avatar: 'https://i.pravatar.cc/150?img=18',
-        timestamp: '2h',
-        content: 'Sharing my thoughts on the future of voice-first interfaces. Some interesting patterns emerging...',
-        emotion: 'CALM',
-        audioDuration: '1:30',
-        likes: 756,
-        replies: 123,
-        reposts: 145
-      }
-    ]
-  };
-
-  // Update the trending emotions data
-  const trendingEmotions = [
-    { label: 'EXCITED', percentage: 24, count: 1234 },
-    { label: 'JOY', percentage: 18, count: 982 },
-    { label: 'CALM', percentage: 12, count: 645 },
-    { label: 'ANNOYED', percentage: 8, count: 421 },
-    { label: 'SAD', percentage: 5, count: 234 }
-  ];
-
-  function createVoicePost(post) {
-    return `
-      <div class="voice-post" data-id="${post.id}">
-        <div class="post-header">
-          <div class="user-info">
-            <img src="${post.avatar}" alt="${post.author}'s avatar" class="post-avatar">
-            <div class="post-meta">
-              <div class="post-author">${post.author}</div>
-              <div class="post-time">${post.timestamp}</div>
-            </div>
-          </div>
-          <div class="emotion-badge ${post.emotion.toLowerCase()}">
-            <span class="material-symbols-outlined">
-              ${getEmotionIcon(post.emotion)}
-            </span>
-            ${post.emotion}
-          </div>
-        </div>
-        
-        <div class="post-content">
-          <p class="post-text">${post.content}</p>
-          <div class="audio-player">
-            <audio controls src="https://www.chosic.com/wp-content/uploads/2023/07/creative_minds.mp3"></audio>
-          </div>
-        </div>
-
-        <div class="post-actions">
-          <button class="action-btn" aria-label="${state.likes.has(post.id) ? 'Unlike' : 'Like'} this post">
-            <span class="material-symbols-outlined">${state.likes.has(post.id) ? 'favorite' : 'favorite_border'}</span>
-            <span class="action-count">${post.likes}</span>
-          </button>
-          <button class="action-btn" aria-label="Reply to this post">
-            <span class="material-symbols-outlined">chat_bubble_outline</span>
-            <span class="action-count">${post.replies}</span>
-          </button>
-          <button class="action-btn" aria-label="Repost">
-            <span class="material-symbols-outlined">repeat</span>
-            <span class="action-count">${post.reposts}</span>
-          </button>
-          <button class="action-btn" aria-label="Share">
-            <span class="material-symbols-outlined">share</span>
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  function getEmotionIcon(emotion) {
-    const icons = {
-      'Happy': 'sentiment_very_satisfied',
-      'Sad': 'sentiment_very_dissatisfied',
-      'Excited': 'mood',
-      'Angry': 'mood_bad',
-      'Calm': 'peace',
-      'Anxious': 'psychology',
-      'Grateful': 'favorite',
-      'Confused': 'psychology_alt'
-    };
-    return icons[emotion] || 'mood';
-  }
-
-  function updateFeed(tabId) {
-    const posts = trendingData[tabId] || [];
-    feedContainer.innerHTML = posts.map(post => createVoicePost(post)).join('');
-    
-    // Add animation classes to posts
-    const voicePosts = feedContainer.querySelectorAll('.voice-post');
-    voicePosts.forEach((post, index) => {
-      post.style.animationDelay = `${index * 0.1}s`;
-      post.classList.add('fadeInUp');
-    });
-
-    // Reinitialize action buttons
-    document.querySelectorAll('.action-btn').forEach(button => {
-      button.addEventListener('click', (e) => {
-        const action = button.getAttribute('aria-label').toLowerCase();
-        const postId = button.closest('.voice-post').dataset.id;
-        
-        if (action.includes('like')) {
-          toggleLike(postId);
-        } else if (action.includes('reply')) {
-          showReplyDialog(postId);
-        } else if (action.includes('repost')) {
-          handleRepost(postId);
-        }
-      });
-    });
-  }
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      // Remove active class from all tabs
-      tabs.forEach(t => t.classList.remove('active'));
-      // Add active class to clicked tab
-      tab.classList.add('active');
-      // Update feed content
-      updateFeed(tab.dataset.tab);
-    });
-  });
-
-  // Initialize with "For You" tab
-  updateFeed('foryou');
-});
-
-// Update trending emotions display
-function updateTrendingEmotions() {
-  const trendingContainer = document.querySelector('.trending-emotions');
-  if (!trendingContainer) return;
-
-  trendingContainer.innerHTML = trendingEmotions.map(emotion => `
-    <div class="emotion-item">
-      <span class="emotion-tag ${emotion.label.toLowerCase()}">${emotion.label}</span>
-      <div class="progress-bar ${emotion.label.toLowerCase()}">
-        <span style="width: ${emotion.percentage}%"></span>
-      </div>
-      <span class="percentage">+${emotion.percentage}%</span>
-    </div>
-  `).join('');
+.share-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
 }
 
-// ======== DARK MODE ========
-function initDarkMode() {
-  const darkModeToggle = document.getElementById('darkModeToggle');
-  const toggleIcon = darkModeToggle.querySelector('.material-symbols-outlined');
-  const toggleText = darkModeToggle.querySelector('.toggle-text');
-  
-  // Check if user has a saved preference
-  const isDarkMode = localStorage.getItem('darkMode') === 'true';
-  
-  // Apply saved preference if it exists
-  if (isDarkMode) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    toggleIcon.textContent = 'light_mode';
-    toggleText.textContent = 'Light Mode';
-  }
-  
-  // Toggle dark mode
-  darkModeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? null : 'dark';
-    
-    if (newTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      toggleIcon.textContent = 'light_mode';
-      toggleText.textContent = 'Light Mode';
-      localStorage.setItem('darkMode', 'true');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      toggleIcon.textContent = 'dark_mode';
-      toggleText.textContent = 'Dark Mode';
-      localStorage.setItem('darkMode', 'false');
-    }
-  });
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
-// Initialize dark mode when the page loads
-document.addEventListener('DOMContentLoaded', initDarkMode);
-
-// Share dialog functionality
-function initShareDialog() {
-  const shareButton = document.getElementById('shareButton');
-  const shareDialog = document.getElementById('shareDialog');
-  const closeDialog = document.querySelector('.close-dialog');
-  const cancelShare = document.querySelector('.cancel-share');
-  const confirmShare = document.querySelector('.confirm-share');
-  const emotionButtons = document.querySelectorAll('.emotion-btn');
-  let selectedEmotion = null;
-
-  // Show dialog when share button is clicked
-  shareButton.addEventListener('click', () => {
-    shareDialog.style.display = 'flex';
-  });
-
-  // Close dialog functions
-  function closeShareDialog() {
-    shareDialog.style.display = 'none';
-    // Reset selections
-    selectedEmotion = null;
-    emotionButtons.forEach(btn => btn.classList.remove('selected'));
-    document.querySelector('input[value="public"]').checked = true;
-  }
-
-  closeDialog.addEventListener('click', closeShareDialog);
-  cancelShare.addEventListener('click', closeShareDialog);
-
-  // Handle emotion selection
-  emotionButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove selected class from all buttons
-      emotionButtons.forEach(btn => btn.classList.remove('selected'));
-      // Add selected class to clicked button
-      button.classList.add('selected');
-      selectedEmotion = button.dataset.emotion;
-    });
-  });
-
-  // Handle share confirmation
-  confirmShare.addEventListener('click', () => {
-    const privacy = document.querySelector('input[name="privacy"]:checked').value;
-    const postData = {
-      privacy: privacy,
-      emotion: selectedEmotion,
-      audioUrl: 'path/to/recorded/audio.mp3', // This would be your actual audio URL
-      timestamp: new Date().toISOString()
-    };
-
-    console.log('Sharing post with settings:', postData);
-    // Here you would typically send this data to your server
-    
-    // Close the dialog
-    closeShareDialog();
-    
-    // Reset the recorder UI
-    document.getElementById('status').textContent = 'Record your voice...';
-    shareButton.disabled = true;
-  });
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-// Update the existing record button click handler
-document.getElementById('shareButton').addEventListener('click', (e) => {
-  e.preventDefault();
-  // Instead of sharing directly, show the share dialog
-  document.getElementById('shareDialog').style.display = 'flex';
-});
+.share-prompt {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
 
-// Add styles for recording preview dialog
-const recordingDialogStyles = document.createElement('style');
-recordingDialogStyles.textContent = `
-  .recording-options-dialog {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.98);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(20px);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
-  
-  .recording-options-dialog .dialog-content {
-    background: linear-gradient(180deg, #1e293b, #0f172a);
-    padding: 40px;
-    border-radius: 32px;
-    max-width: 520px;
-    width: 92%;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(148, 163, 184, 0.1);
-  }
+.record-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
 
-  .recording-options-dialog h3 {
-    color: #fff;
-    font-size: 32px;
-    font-weight: 600;
-    margin-bottom: 32px;
-  }
+.record-controls button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  background-color: var(--bg-accent);
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 600;
+}
 
-  .recording-options-dialog .audio-preview {
-    background: rgba(30, 41, 59, 0.3);
-    border-radius: 100px;
-    padding: 8px;
-    margin-bottom: 48px;
-  }
+.record-controls button:disabled {
+  background-color: var(--text-secondary);
+  cursor: not-allowed;
+}
 
-  .recording-options-dialog audio {
+.record-controls button:hover:not(:disabled) {
+  background-color: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.emotion-tag {
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+}
+
+.emotion-tag.excited {
+  background-color: #FF4D8D;  /* Pink */
+}
+
+.emotion-tag.joy {
+  background-color: #FF7043;  /* Coral red */
+}
+
+.emotion-tag.calm {
+  background-color: #4DD0E1;  /* Light blue */
+}
+
+.emotion-tag.annoyed {
+  background-color: #EF4444;  /* Red */
+}
+
+.emotion-tag.sad {
+  background-color: #7C4DFF;  /* Purple */
+}
+
+/* Dark mode emotion tags - slightly lighter variants */
+[data-theme="dark"] .emotion-tag.excited {
+  background-color: #FF6AA3;
+}
+
+[data-theme="dark"] .emotion-tag.joy {
+  background-color: #FF8585;
+}
+
+[data-theme="dark"] .emotion-tag.calm {
+  background-color: #65D8E4;
+}
+
+[data-theme="dark"] .emotion-tag.annoyed {
+  background-color: #FF8585;
+}
+
+[data-theme="dark"] .emotion-tag.sad {
+  background-color: #9466FF;
+}
+
+/* Feed Container / Cards */
+#feedContainer {
+  margin-top: 20px;
+}
+
+.card {
+  background-color: var(--bg-secondary);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  animation: fadeInUp 0.5s ease-out;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Feed Item Layout */
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.feed-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feed-user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.feed-time {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.emotion-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.emotion-badge.excited {
+  color: var(--emotion-excited);
+  background: rgba(255, 77, 141, 0.1);
+}
+
+.emotion-badge.joy {
+  color: var(--emotion-joy);
+  background: rgba(255, 112, 67, 0.1);
+}
+
+.emotion-badge.calm {
+  color: var(--emotion-calm);
+  background: rgba(77, 208, 225, 0.1);
+}
+
+.emotion-badge.annoyed {
+  color: var(--emotion-annoyed);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.emotion-badge.sad {
+  color: var(--emotion-sad);
+  background: rgba(124, 77, 255, 0.1);
+}
+
+/* Dark mode emotion badges */
+[data-theme="dark"] .emotion-badge.excited {
+  color: #FF85B6;
+  background: rgba(255, 77, 141, 0.15);
+}
+
+[data-theme="dark"] .emotion-badge.joy {
+  color: #FFD166;
+  background: rgba(255, 112, 67, 0.15);
+}
+
+[data-theme="dark"] .emotion-badge.calm {
+  color: #48D1E8;
+  background: rgba(77, 208, 225, 0.15);
+}
+
+[data-theme="dark"] .emotion-badge.annoyed {
+  color: #FF8585;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+[data-theme="dark"] .emotion-badge.sad {
+  color: #A685FF;
+  background: rgba(124, 77, 255, 0.15);
+}
+
+/* Audio Player */
+.audio-controls {
+  width: 100%;
+  margin: 10px 0;
+  border-radius: 8px;
+}
+
+/* Custom audio player styling for dark mode */
+[data-theme="dark"] .audio-container,
+[data-theme="dark"] .audio-player {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+[data-theme="dark"] audio {
+  -webkit-appearance: none;
+  background-color: #1A1A1A;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-enclosure {
+  background-color: #1A1A1A;
+  border-radius: 12px;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-panel {
+  background-color: #1A1A1A !important;
+}
+
+/* Make all control icons pure white */
+[data-theme="dark"] audio::-webkit-media-controls-play-button,
+[data-theme="dark"] audio::-webkit-media-controls-mute-button,
+[data-theme="dark"] audio::-webkit-media-controls-overflow-button {
+  -webkit-filter: grayscale(1) brightness(2) !important;
+  filter: grayscale(1) brightness(2) !important;
+  background-color: transparent !important;
+  color: white !important;
+  fill: white !important;
+  opacity: 1 !important;
+}
+
+/* Specific styling for overflow button */
+[data-theme="dark"] audio::-webkit-media-controls-overflow-button {
+  -webkit-filter: invert(1);
+  filter: invert(1);
+  color: white;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-overflow-button:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Hide unnecessary buttons */
+[data-theme="dark"] audio::-webkit-media-controls-toggle-closed-captions-button,
+[data-theme="dark"] audio::-webkit-media-controls-fullscreen-button,
+[data-theme="dark"] audio::-webkit-media-controls-return-to-realtime-button {
+  display: none !important;
+}
+
+/* Timeline styling */
+[data-theme="dark"] audio::-webkit-media-controls-timeline {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  height: 4px;
+  margin: 0 8px;
+}
+
+/* Time display */
+[data-theme="dark"] audio::-webkit-media-controls-current-time-display,
+[data-theme="dark"] audio::-webkit-media-controls-time-remaining-display {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+}
+
+/* Timeline and volume slider */
+[data-theme="dark"] audio::-webkit-media-controls-timeline,
+[data-theme="dark"] audio::-webkit-media-controls-volume-slider {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  height: 4px;
+}
+
+/* Timeline and volume slider thumb */
+[data-theme="dark"] audio::-webkit-media-controls-timeline::-webkit-slider-thumb,
+[data-theme="dark"] audio::-webkit-media-controls-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: #FFFFFF;
+  border-radius: 50%;
+  height: 12px;
+  width: 12px;
+}
+
+/* Volume slider container */
+[data-theme="dark"] audio::-webkit-media-controls-volume-control-container {
+  background-color: transparent !important;
+  padding: 0 8px !important;
+}
+
+/* Audio container wrapper */
+[data-theme="dark"] .audio-wrapper {
+  background-color: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+/* Custom progress bar */
+[data-theme="dark"] .audio-progress {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  height: 4px;
+  margin: 10px 0;
+  position: relative;
+  width: 100%;
+}
+
+[data-theme="dark"] .audio-progress-bar {
+  background-color: #FFFFFF;
+  border-radius: 2px;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: width 0.1s linear;
+}
+
+/* Hover states */
+[data-theme="dark"] audio::-webkit-media-controls-play-button:hover,
+[data-theme="dark"] audio::-webkit-media-controls-mute-button:hover {
+  opacity: 1;
+}
+
+[data-theme="dark"] .audio-container {
+  background-color: #1A1A1A;
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] audio {
+  width: 100%;
+  height: 40px;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-panel {
+  background-color: #1A1A1A;
+  border-radius: 12px;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-enclosure {
+  background-color: #1A1A1A;
+  border-radius: 12px;
+}
+
+/* Play button styling */
+[data-theme="dark"] audio::-webkit-media-controls-play-button {
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+  filter: invert(1);
+  opacity: 0.9;
+}
+
+/* Time display */
+[data-theme="dark"] audio::-webkit-media-controls-current-time-display,
+[data-theme="dark"] audio::-webkit-media-controls-time-remaining-display {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 400;
+  padding: 0 8px;
+}
+
+/* Timeline */
+[data-theme="dark"] audio::-webkit-media-controls-timeline-container {
+  padding: 0;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-timeline {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  height: 4px;
+  margin: 0 8px;
+}
+
+/* Volume controls */
+[data-theme="dark"] audio::-webkit-media-controls-volume-slider-container,
+[data-theme="dark"] audio::-webkit-media-controls-volume-control-container {
+  background-color: transparent;
+  padding: 0 8px;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-volume-slider {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  height: 4px;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-mute-button,
+[data-theme="dark"] audio::-webkit-media-controls-overflow-button {
+  -webkit-filter: grayscale(1) brightness(2) !important;
+  filter: grayscale(1) brightness(2) !important;
+  opacity: 1 !important;
+  background-color: transparent !important;
+}
+
+/* Menu button (three dots) */
+[data-theme="dark"] audio::-webkit-media-controls-toggle-closed-captions-button {
+  display: none;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+
+/* Hover states */
+[data-theme="dark"] audio::-webkit-media-controls-play-button:hover,
+[data-theme="dark"] audio::-webkit-media-controls-mute-button:hover,
+[data-theme="dark"] audio::-webkit-media-controls-toggle-closed-captions-button:hover,
+[data-theme="dark"] audio::-webkit-media-controls-fullscreen-button:hover {
+  opacity: 1;
+}
+
+/* Progress bar fill color */
+[data-theme="dark"] audio::-webkit-slider-thumb,
+[data-theme="dark"] audio::-webkit-media-controls-timeline::-webkit-slider-thumb {
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+}
+
+/* Custom progress container */
+[data-theme="dark"] .audio-progress-container {
+  background-color: rgba(255, 255, 255, 0.1);
+  height: 4px;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  margin: 0 16px;
+}
+
+[data-theme="dark"] .audio-progress-fill {
+  background-color: #FFFFFF;
+  height: 100%;
+  border-radius: 4px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Feed Actions */
+.feed-actions {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.feed-actions button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.feed-actions button:hover {
+  color: var(--primary);
+  background-color: var(--bg-primary);
+}
+
+/* Replies Section */
+.replies-container {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.replies-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.reply-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  animation: fadeInUp 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.reply-username {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.reply-time {
+  color: #666;
+  font-size: 12px;
+}
+
+.reply-text {
+  color: #444;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Update Feed Actions for like button */
+.feed-actions button .material-symbols-outlined {
+  transition: all 0.2s;
+}
+
+.feed-actions button:hover .material-symbols-outlined {
+  transform: scale(1.1);
+}
+
+.feed-actions button[aria-label="Unlike this post"] {
+  color: #e74c3c;
+}
+
+.feed-actions button[aria-label="Unlike this post"]:hover {
+  background-color: #fee;
+}
+
+/* ======== SIDEBAR ======== */
+.sidebar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  animation: fadeInUp 0.5s ease-out;
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+}
+
+.sidebar-card h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 18px;
+}
+
+/* Trending Emotions */
+.trending-emotions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emotion-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.emotion-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.emotion-item .label {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 15px;
+  width: 80px; /* Fixed width for consistent alignment */
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: var(--bg-secondary);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+
+.percentage {
+  width: 50px; /* Fixed width for consistent alignment */
+  text-align: right;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Progress bar colors */
+.progress-bar.excited span { 
+  background: var(--emotion-excited);
+}
+
+.progress-bar.joy span { 
+  background: var(--emotion-joy);
+}
+
+.progress-bar.calm span { 
+  background: var(--emotion-calm);
+}
+
+.progress-bar.annoyed span { 
+  background: var(--emotion-annoyed);
+}
+
+.progress-bar.sad span { 
+  background: var(--emotion-sad);
+}
+
+/* Trending Voices and Who to Follow */
+.trending-card,
+.follow-card {
+  background-color: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.trending-card h2,
+.follow-card h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.voices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.voice-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+  cursor: pointer;
+}
+
+.voice-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.voice-item .post-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.voice-info {
+  flex: 1;
+}
+
+.voice-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.voice-bio {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ======== MEDIA QUERIES (Responsive) ======== */
+@media (max-width: 992px) {
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
     width: 100%;
-    height: 40px;
-    border-radius: 100px;
   }
-
-  .recording-options-dialog audio::-webkit-media-controls-panel {
-    background: transparent;
+  .feed {
+    max-width: 100%;
   }
+}
 
-  .recording-options-dialog audio::-webkit-media-controls-play-button {
-    background-color: #8b5cf6;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
+@media (max-width: 576px) {
+  .container {
+    padding: 0 10px;
   }
-
-  .recording-options-dialog audio::-webkit-media-controls-timeline {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 100px;
-    margin: 0 8px;
+  .tabs {
+    overflow-x: auto;
+    padding-bottom: 5px;
   }
-
-  .recording-options-dialog audio::-webkit-media-controls-current-time-display,
-  .recording-options-dialog audio::-webkit-media-controls-time-remaining-display {
-    color: #fff;
+  .record-controls {
+    flex-direction: column;
   }
+}
 
-  .recording-options-dialog .detected-emotion {
-    margin-bottom: 48px;
+/* ======== ACCESSIBILITY ======== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ======== LOADING STATES ======== */
+.loading {
+  position: relative;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border: 2px solid #7a4dd6;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
 
-  .recording-options-dialog .detected-emotion h4 {
-    color: #fff;
-    font-size: 24px;
-    font-weight: 500;
-    margin-bottom: 16px;
+/* ======== AUTHENTICATION ======== */
+.auth-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.auth-form {
+  background-color: var(--bg-secondary);
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.auth-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  position: absolute;
+  right: -12px;
+  top: -4px;
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+.close-btn .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.auth-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary);
+  color: var(--bg-secondary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.auth-form button:hover {
+  background-color: var(--primary-dark);
+}
+
+.auth-form .toggle-form {
+  margin-top: 16px;
+  text-align: center;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ======== PAGINATION ======== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 8px;
+}
+
+.pagination button {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background-color: #7a4dd6;
+  color: #fff;
+  border-color: #7a4dd6;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Audio Container */
+.audio-container {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.audio-title {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.audio-controls {
+  width: 100%;
+  height: 36px;
+  border-radius: 18px;
+}
+
+/* Custom audio player styling */
+audio::-webkit-media-controls-panel {
+  background-color: #fff;
+}
+
+audio::-webkit-media-controls-play-button {
+  background-color: #7a4dd6;
+  border-radius: 50%;
+}
+
+audio::-webkit-media-controls-play-button:hover {
+  background-color: #6a3cc6;
+}
+
+/* Loading indicator */
+.audio-loading {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+.audio-loading.error {
+  color: #e74c3c;
+  animation: none;
+  background-color: #fee;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
   }
-
-  .recording-options-dialog .emotion-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: 100px;
-    font-size: 16px;
-    font-weight: 500;
-    background: rgba(30, 41, 59, 0.3);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+  50% {
+    opacity: 1;
   }
-
-  .recording-options-dialog .emotion-indicator.EXCITED {
-    color: #FF4D8D;
-    background: rgba(255, 77, 141, 0.1);
-    border-color: rgba(255, 77, 141, 0.2);
+  100% {
+    opacity: 0.6;
   }
+}
 
-  .recording-options-dialog .emotion-indicator.JOY {
-    color: #E65100;
-    background: rgba(230, 81, 0, 0.1);
-    border-color: rgba(230, 81, 0, 0.2);
+/* Scroll Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-
-  .recording-options-dialog .emotion-indicator.CALM {
-    color: #4DD0E1;
-    background: rgba(77, 208, 225, 0.1);
-    border-color: rgba(77, 208, 225, 0.2);
-  }
-
-  .recording-options-dialog .emotion-indicator.ANNOYED {
-    color: #FF6B6B;
-    background: rgba(255, 107, 107, 0.1);
-    border-color: rgba(255, 107, 107, 0.2);
-  }
-
-  .recording-options-dialog .emotion-indicator.SAD {
-    color: #7C4DFF;
-    background: rgba(124, 77, 255, 0.1);
-    border-color: rgba(124, 77, 255, 0.2);
-  }
-
-  .recording-actions {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-
-  .recording-actions .preview-btn,
-  .recording-actions .discard-btn {
-    grid-column: 1 / -1;
-  }
-
-  .recording-actions .action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 16px;
-    border-radius: 16px;
-    background: rgba(30, 41, 59, 0.3);
-    border: 1px solid rgba(148, 163, 184, 0.1);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(8px);
-  }
-
-  .recording-actions .preview-btn {
-    background: rgba(30, 41, 59, 0.3);
-  }
-
-  .recording-actions .edit-btn {
-    background: rgba(56, 189, 248, 0.1);
-  }
-
-  .recording-actions .post-btn {
-    background: rgba(34, 197, 94, 0.1);
-  }
-
-  .recording-actions .save-btn {
-    background: rgba(139, 92, 246, 0.1);
-  }
-
-  .recording-actions .discard-btn {
-    background: rgba(239, 68, 68, 0.1);
-  }
-
-  .recording-actions .action-btn:hover {
-    transform: translateY(-1px);
-    background: rgba(51, 65, 85, 0.4);
-  }
-
-  .recording-actions .action-btn:active {
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
-
-  .recording-actions .action-btn .material-symbols-outlined {
-    font-size: 20px;
-    opacity: 0.9;
-  }
-
-  @keyframes dialogAppear {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-`;
-
-document.head.appendChild(recordingDialogStyles);
-
-// Add styles for the new components
-const additionalStyles = document.createElement('style');
-additionalStyles.textContent = `
-  .detected-emotion {
-    margin-top: 16px;
-    padding: 16px;
-    background: var(--secondary-background);
-    border-radius: 12px;
-  }
-  
-  .detected-emotion h4 {
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    color: var(--text-color);
-  }
-  
-  .emotion-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 500;
-    width: fit-content;
-  }
-  
-  .emotion-indicator.excited { background: #ffd7d7; color: #e74c3c; }
-  .emotion-indicator.joy { background: rgba(230, 81, 0, 0.1); color: #E65100; }
-  .emotion-indicator.calm { background: #d4e6f1; color: #3498db; }
-  .emotion-indicator.annoyed { background: rgba(255, 107, 107, 0.1); color: #FF6B6B; }
-  .emotion-indicator.sad { background: #e8daef; color: #9b59b6; }
-  
-  .audio-editor-dialog {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1001;
-  }
-  
-  .editor-content {
-    background: var(--background-color);
-    padding: 24px;
-    border-radius: 16px;
-    max-width: 600px;
-    width: 90%;
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.3);
-  }
-  
-  .waveform-editor {
-    margin: 20px 0;
-    padding: 16px;
-    background: var(--secondary-background);
-    border-radius: 12px;
-  }
-  
-  .edit-tools {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin: 20px 0;
-  }
-  
-  .tool-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: var(--secondary-color);
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .tool-btn:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
-  }
-  
-  .editor-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 20px;
-  }
-  
-  .editor-actions button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-  }
-  
-  .cancel-edit {
-    background: var(--secondary-color);
-    color: var(--text-color);
-  }
-  
-  .save-edit {
-    background: var(--primary-color);
-    color: white;
-  }
-  
-  .toast-message {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--background-color);
-    color: var(--text-color);
-    padding: 12px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1002;
-    animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.7s;
-  }
-  
-  @keyframes slideUp {
-    from { transform: translate(-50%, 100%); opacity: 0; }
-    to { transform: translate(-50%, 0); opacity: 1; }
-  }
-  
-  @keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-  }
-`;
-
-document.head.appendChild(additionalStyles);
-
-// Add helper function to get emotion color
-function getEmotionColor(emotion) {
-  const emotionConfig = CONFIG.supportedEmotions.find(e => e.label === emotion);
-  return emotionConfig ? emotionConfig.color : '#ffffff';
 }
 
-// Initialize UI elements and event listeners
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize profile button
-  const profileLink = document.getElementById('profileLink');
-  if (profileLink) {
-    profileLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      // Update navigation
-      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-      profileLink.classList.add('active');
-      
-      // Hide main content and show profile view
-      const mainContent = document.querySelector('.main-content');
-      const feedContainer = document.getElementById('feedContainer');
-      const mainHeader = document.querySelector('.main-header');
-      const voiceComposer = document.querySelector('.voice-composer');
-      
-      if (mainHeader) mainHeader.style.display = 'none';
-      if (feedContainer) feedContainer.style.display = 'none';
-      if (voiceComposer) voiceComposer.style.display = 'none';
-      
-      // Get the template content
-      const profileTemplate = document.getElementById('profileViewTemplate');
-      if (profileTemplate) {
-        const profileView = document.importNode(profileTemplate.content, true);
-        
-        // Remove any existing profile view
-        const existingProfileView = mainContent.querySelector('.profile-view');
-        if (existingProfileView) {
-          existingProfileView.remove();
-        }
-        
-        // Append the new profile view
-        mainContent.appendChild(profileView);
-        
-        // Initialize the profile view
-        initProfileView();
-      }
-    });
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
-
-  // Handle navigation back to feed
-  document.querySelectorAll('.nav-link:not(#profileLink)').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      // Show the main header and feed container
-      const mainHeader = document.querySelector('.main-header');
-      const feedContainer = document.getElementById('feedContainer');
-      const mainContent = document.querySelector('.main-content');
-      const voiceComposer = document.querySelector('.voice-composer');
-      
-      if (mainHeader) mainHeader.style.display = 'block';
-      if (feedContainer) feedContainer.style.display = 'block';
-      if (voiceComposer) voiceComposer.style.display = 'block';
-      
-      // Remove profile view if it exists
-      const profileView = mainContent.querySelector('.profile-view');
-      if (profileView) {
-        profileView.remove();
-      }
-      
-      // Update navigation
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      link.classList.add('active');
-    });
-  });
-
-  // Initialize live room navigation
-  initializeLiveRoomNavigation();
-});
-
-function initializeActionButtons() {
-  // Like buttons
-  document.querySelectorAll('.action-btn[aria-label*="Like"]').forEach(button => {
-    button.addEventListener('click', () => {
-      const postId = button.closest('.voice-post').getAttribute('data-id');
-      toggleLike(postId);
-    });
-  });
-  
-  // Reply buttons
-  document.querySelectorAll('.action-btn[aria-label="Reply"]').forEach(button => {
-    button.addEventListener('click', () => {
-      const post = button.closest('.voice-post');
-      showReplyDialog(post.getAttribute('data-id'));
-    });
-  });
-  
-  // Repost buttons
-  document.querySelectorAll('.action-btn[aria-label="Repost"]').forEach(button => {
-    button.addEventListener('click', () => {
-      const post = button.closest('.voice-post');
-      handleRepost(post.getAttribute('data-id'));
-    });
-  });
-}
-
-function showReplyDialog(postId) {
-  const replyDialog = document.createElement('div');
-  replyDialog.className = 'reply-dialog';
-  replyDialog.innerHTML = `
-    <div class="reply-content">
-      <h3>Reply to Voice</h3>
-      <div class="reply-composer">
-        <button class="record-reply-btn">
-          <span class="material-symbols-outlined">mic</span>
-          Record Reply
-        </button>
-      </div>
-      <div class="reply-actions">
-        <button class="cancel-reply">Cancel</button>
-        <button class="post-reply" disabled>Reply</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(replyDialog);
-  
-  // Add event listeners
-  replyDialog.querySelector('.cancel-reply').addEventListener('click', () => {
-    replyDialog.remove();
-  });
-}
-
-function handleRepost(postId) {
-  const post = document.querySelector(`.voice-post[data-id="${postId}"]`);
-  const repostButton = post.querySelector('.action-btn[aria-label="Repost"]');
-  const repostCount = repostButton.querySelector('.action-count');
-  
-  if (repostButton.classList.contains('active')) {
-    repostButton.classList.remove('active');
-    repostCount.textContent = parseInt(repostCount.textContent) - 1;
-  } else {
-    repostButton.classList.add('active');
-    repostCount.textContent = parseInt(repostCount.textContent) + 1;
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-// Profile View Functionality
-function initProfileView() {
-  // Hide live room banner and show profile content
-  const liveRoomBanner = document.querySelector('.live-room-banner');
-  if (liveRoomBanner) {
-    liveRoomBanner.style.display = 'none';
-  }
+/* Animate replies */
+.reply-item:nth-child(1) { animation-delay: 0.1s; }
+.reply-item:nth-child(2) { animation-delay: 0.2s; }
+.reply-item:nth-child(3) { animation-delay: 0.3s; }
 
-  // Profile data
-  const profileData = {
-    name: "Alex Morgan",
-    handle: "@alexmorgan",
-    voiceNotes: "5.2K",
-    bio: "Voice creator sharing thoughts on technology, design, and everyday life. Join me on this audio journey!",
-    avatar: "https://i.pravatar.cc/300?img=51",
-    banner: "https://picsum.photos/800/200",
-    joinDate: "February 2024",
-    location: "San Francisco, CA",
-    website: "alexmorgan.com",
-    stats: {
-      following: 342,
-      followers: "5.2K"
-    },
-    voiceStats: {
-      voiceNotes: 2,
-      listens: "1.3K",
-      reactions: 576,
-      topEmotion: "Excited"
-    },
-    emotionSpectrum: [
-      { emotion: "Excited", percentage: 50 },
-      { emotion: "Calm", percentage: 50 },
-      { emotion: "Joy", percentage: 0 },
-      { emotion: "Annoyed", percentage: 0 },
-      { emotion: "Sad", percentage: 0 }
-    ],
-    posts: [
-      {
-        id: 1,
-        content: "Just finished the new design for our app's dashboard. Super excited about the clean layout and improved UX! Let me know what you think...",
-        timestamp: "2h",
-        emotion: "EXCITED",
-        likes: 328,
-        replies: 24,
-        shares: 12,
-        audioDuration: "0:42"
-      }
-    ]
-  };
-
-  // Update header
-  const profileHeaderTop = document.querySelector('.profile-header-top');
-  if (profileHeaderTop) {
-    const title = profileHeaderTop.querySelector('.profile-title');
-    if (title) {
-      title.innerHTML = `
-        <h1>${profileData.name}</h1>
-        <div class="subtitle">${profileData.voiceNotes} Voice Notes</div>
-      `;
-    }
-  }
-
-  // Update profile info
-  const profileInfo = document.querySelector('.profile-info-section');
-  if (profileInfo) {
-    const avatar = profileInfo.querySelector('.profile-avatar');
-    if (avatar) {
-      avatar.src = profileData.avatar;
-      avatar.alt = profileData.name;
-    }
-
-    const details = profileInfo.querySelector('.profile-details');
-    if (details) {
-      details.innerHTML = `
-        <h2>${profileData.name}</h2>
-        <span class="profile-handle">${profileData.handle}</span>
-        <p class="profile-bio">${profileData.bio}</p>
-        <div class="profile-metadata">
-          <span class="metadata-item">
-            <span class="material-symbols-outlined">calendar_today</span>
-            Joined ${profileData.joinDate}
-          </span>
-          <span class="metadata-item">
-            <span class="material-symbols-outlined">location_on</span>
-            ${profileData.location}
-          </span>
-          <span class="metadata-item">
-            <span class="material-symbols-outlined">link</span>
-            <a href="https://${profileData.website}" target="_blank">${profileData.website}</a>
-          </span>
-        </div>
-        <div class="profile-stats">
-          <a href="#" class="stat-link"><span class="stat-number">${profileData.stats.following}</span> Following</a>
-          <a href="#" class="stat-link"><span class="stat-number">${profileData.stats.followers}</span> Followers</a>
-        </div>
-        <button class="edit-profile-btn">Edit Profile</button>
-        <button class="more-options-btn">
-          <span class="material-symbols-outlined">more_horiz</span>
-        </button>
-      `;
-    }
-  }
-
-  // Update voice stats
-  const voiceStats = document.querySelector('.voice-stats-card .stats-grid');
-  if (voiceStats) {
-    voiceStats.innerHTML = `
-      <div class="stat-item">
-        <div class="stat-icon">
-          <span class="material-symbols-outlined">mic</span>
-        </div>
-        <div class="stat-value">${profileData.voiceStats.voiceNotes}</div>
-        <div class="stat-label">Voice Notes</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-icon">
-          <span class="material-symbols-outlined">chat</span>
-        </div>
-        <div class="stat-value">${profileData.voiceStats.listens}</div>
-        <div class="stat-label">Listens</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-icon">
-          <span class="material-symbols-outlined">favorite</span>
-        </div>
-        <div class="stat-value">${profileData.voiceStats.reactions}</div>
-        <div class="stat-label">Reactions</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-icon">
-          <span class="material-symbols-outlined">trending_up</span>
-        </div>
-        <div class="stat-value">${profileData.voiceStats.topEmotion}</div>
-        <div class="stat-label">Top Emotion</div>
-      </div>
-    `;
-  }
-
-  // Update emotion spectrum
-  const emotionList = document.querySelector('.emotion-spectrum-card .emotion-list');
-  if (emotionList) {
-    emotionList.innerHTML = profileData.emotionSpectrum.map(emotion => `
-      <div class="emotion-item">
-        <div class="emotion-label">${emotion.emotion}</div>
-        <div class="emotion-bar-container">
-          <div class="emotion-bar" style="width: ${emotion.percentage}%"></div>
-        </div>
-        <div class="emotion-percentage">${emotion.percentage}%</div>
-      </div>
-    `).join('');
-  }
-
-  // Load voice posts
-  const tabContent = document.querySelector('.tab-content');
-  if (tabContent) {
-    tabContent.innerHTML = profileData.posts.map(post => createVoicePost(post)).join('');
-  }
-
-  // Initialize tab navigation
-  const tabLinks = document.querySelectorAll('.tab-link');
-  tabLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      tabLinks.forEach(l => l.classList.remove('active'));
-      link.classList.add('active');
-      // Here you would load the appropriate content based on the selected tab
-    });
-  });
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
 }
 
-// Add styles for the preview dialog
-const previewStyles = document.createElement('style');
-previewStyles.textContent = `
-  .recording-preview-dialog {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(8px);
-  }
-
-  .preview-content {
-    background: #000000;
-    border-radius: 16px;
-    padding: 24px;
-    width: 90%;
-    max-width: 480px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-  }
-
-  .user-details {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .user-name {
-    font-weight: 600;
-    color: #fff;
-  }
-
-  .preview-label {
-    color: #71767b;
-    font-size: 14px;
-  }
-
-  .close-preview {
-    background: none;
-    border: none;
-    color: #71767b;
-    cursor: pointer;
-    padding: 8px;
-  }
-
-  .audio-preview {
-    margin: 20px 0;
-    padding: 16px;
-    background: #16181c;
-    border-radius: 16px;
-  }
-
-  .audio-player {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .play-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: #1d9bf0;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .play-button:hover {
-    background: #1a8cd8;
-  }
-
-  .waveform {
-    flex-grow: 1;
-    height: 40px;
-    background: #16181c;
-    border-radius: 20px;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-  }
-
-  .time-display {
-    color: #fff;
-    font-size: 14px;
-    margin-right: 12px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .progress-bar {
-    flex-grow: 1;
-    height: 4px;
-    background: rgba(29, 155, 240, 0.2);
-    border-radius: 2px;
-    cursor: pointer;
-    position: relative;
-  }
-
-  .progress-fill {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: #1d9bf0;
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.1s linear;
-  }
-
-  .preview-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .action-group {
-    display: flex;
-    gap: 12px;
-  }
-
-  .action-btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 9999px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-  }
-
-  .edit-btn, .post-btn {
-    flex: 1;
-  }
-
-  .edit-btn {
-    background: rgba(239, 243, 244, 0.1);
-    color: #fff;
-  }
-
-  .post-btn {
-    background: #1d9bf0;
-    color: white;
-  }
-
-  .save-btn {
-    background: rgba(239, 243, 244, 0.1);
-    color: #fff;
-  }
-
-  .discard-btn {
-    background: rgba(244, 33, 46, 0.1);
-    color: rgb(244, 33, 46);
-  }
-
-  .toast-message {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(29, 155, 240, 0.9);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 9999px;
-    font-size: 14px;
-    font-weight: 500;
-    z-index: 1001;
-    animation: fadeInUp 0.3s ease;
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translate(-50%, 20px);
-    }
-    to {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-  }
-`;
-
-document.head.appendChild(previewStyles);
-
-// Add this at the beginning of the file after other imports
-document.head.insertAdjacentHTML('beforeend', '<script src="bitmojis.js"></script>');
-
-// Update the createFeedItem function to use Bitmojis
-function createFeedItem(item) {
-  const feedItem = document.createElement('div');
-  feedItem.className = 'card';
-  
-  const header = document.createElement('div');
-  header.className = 'feed-header';
-  
-  const userSection = document.createElement('div');
-  userSection.className = 'feed-user';
-  
-  // Create Bitmoji avatar
-  const avatarContainer = document.createElement('div');
-  avatarContainer.className = 'bitmoji-container post-avatar';
-  avatarContainer.innerHTML = getBitmoji(item.bitmoji || 'default');
-  
-  const userInfo = document.createElement('div');
-  userInfo.className = 'user-info';
-  
-  const userName = document.createElement('div');
-  userName.className = 'feed-user-name';
-  userName.textContent = item.userName;
-  
-  const timeStamp = document.createElement('div');
-  timeStamp.className = 'feed-time';
-  timeStamp.textContent = item.time;
-  
-  userInfo.appendChild(userName);
-  userInfo.appendChild(timeStamp);
-  
-  userSection.appendChild(avatarContainer);
-  userSection.appendChild(userInfo);
-  
-  const emotionBadge = document.createElement('div');
-  emotionBadge.className = `emotion-badge ${item.emotion.toLowerCase()}`;
-  emotionBadge.textContent = item.emotion;
-  
-  header.appendChild(userSection);
-  header.appendChild(emotionBadge);
-  
-  // Audio area with title
-  const audioContainer = document.createElement("div");
-  audioContainer.classList.add("audio-container");
-  
-  const audioTitle = document.createElement("div");
-  audioTitle.classList.add("audio-title");
-  audioTitle.textContent = item.audioTitle;
-  audioContainer.appendChild(audioTitle);
-  
-  const audioElem = document.createElement("audio");
-  audioElem.controls = true;
-  audioElem.src = item.audioUrl;
-  audioElem.classList.add("audio-controls");
-  audioElem.setAttribute("aria-label", `${item.userName}'s audio message: ${item.audioTitle}`);
-  audioElem.preload = "metadata"; // Only load metadata initially
-  audioContainer.appendChild(audioElem);
-  
-  // Add loading indicator for audio
-  const loadingIndicator = document.createElement("div");
-  loadingIndicator.classList.add("audio-loading");
-  loadingIndicator.textContent = "Loading audio...";
-  audioContainer.appendChild(loadingIndicator);
-  
-  // Handle audio events
-  audioElem.addEventListener("loadeddata", () => {
-    loadingIndicator.style.display = "none";
-  });
-  
-  audioElem.addEventListener("error", () => {
-    loadingIndicator.textContent = "Error loading audio";
-    loadingIndicator.classList.add("error");
-  });
-  
-  // Actions
-  const actionsDiv = document.createElement("div");
-  actionsDiv.classList.add("feed-actions");
-  
-  const likeBtn = document.createElement("button");
-  const isLiked = state.likes.has(item.id);
-  likeBtn.setAttribute("aria-label", isLiked ? "Unlike this post" : "Like this post");
-  likeBtn.innerHTML = `<span class="material-symbols-outlined" style="color: ${isLiked ? '#e74c3c' : '#666'}">${isLiked ? 'favorite' : 'favorite_border'}</span> ${isLiked ? 'Liked' : 'Like'}`;
-  likeBtn.addEventListener("click", () => toggleLike(item.id));
-  
-  const replyBtn = document.createElement("button");
-  replyBtn.setAttribute("aria-label", "Reply to this post");
-  replyBtn.innerHTML = `<span class="material-symbols-outlined">chat</span> Reply`;
-  
-  actionsDiv.appendChild(likeBtn);
-  actionsDiv.appendChild(replyBtn);
-  
-  // Replies section
-  if (item.replies && item.replies.length > 0) {
-    const repliesContainer = document.createElement("div");
-    repliesContainer.classList.add("replies-container");
-    
-    const repliesTitle = document.createElement("div");
-    repliesTitle.classList.add("replies-title");
-    repliesTitle.textContent = "Replies";
-    repliesContainer.appendChild(repliesTitle);
-    
-    item.replies.forEach(reply => {
-      const replyDiv = document.createElement("div");
-      replyDiv.classList.add("reply-item");
-      
-      const replyHeader = document.createElement("div");
-      replyHeader.classList.add("reply-header");
-      
-      const replyUserName = document.createElement("span");
-      replyUserName.classList.add("reply-username");
-      replyUserName.textContent = reply.userName;
-      
-      const replyTime = document.createElement("span");
-      replyTime.classList.add("reply-time");
-      replyTime.textContent = reply.time;
-      
-      replyHeader.appendChild(replyUserName);
-      replyHeader.appendChild(replyTime);
-      
-      const replyText = document.createElement("div");
-      replyText.classList.add("reply-text");
-      replyText.textContent = reply.text;
-      
-      replyDiv.appendChild(replyHeader);
-      replyDiv.appendChild(replyText);
-      repliesContainer.appendChild(replyDiv);
-    });
-    
-    card.appendChild(actionsDiv);
-    card.appendChild(repliesContainer);
-  } else {
-    card.appendChild(actionsDiv);
-  }
-  
-  // Append header and audio container to card
-  card.appendChild(header);
-  card.appendChild(audioContainer);
-  
-  // Add card to feed
-  feedContainer.appendChild(card);
+/* Infinite scroll loader */
+.infinite-scroll-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-size: 14px;
+  color: #666;
+  gap: 10px;
 }
 
-// Update the sample feed data to include Bitmoji types
-const sampleFeedData = [
-  {
-    id: 1,
-    userName: "Sarah Chen",
-    time: "2h",
-    content: "The new AI features we're adding to the platform are mind-blowing! Check out this demo...",
-    emotion: "EXCITED",
-    bitmoji: "sarah",
-    likes: 128,
-    comments: 24,
-    shares: 12
-  },
-  {
-    id: 2,
-    userName: "Marcus Johnson",
-    time: "3h",
-    content: "Just released our latest design system update. The components are so much more flexible now!",
-    emotion: "JOY",
-    bitmoji: "marcus",
-    likes: 89,
-    comments: 15,
-    shares: 8
-  },
-  {
-    id: 3,
-    userName: "Elena Rodriguez",
-    time: "4h",
-    content: "Reflecting on our user research findings. Some fascinating insights about how people use voice interfaces.",
-    emotion: "CALM",
-    bitmoji: "elena",
-    likes: 156,
-    comments: 32,
-    shares: 18
-  }
-];
+.infinite-scroll-loader .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #7a4dd6;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
-// Live Room Navigation Handler
-function initializeLiveRoomNavigation() {
-  // Handle nav bar live room link
-  const liveRoomLink = document.querySelector('.nav-link span.material-symbols-outlined[innerHTML="campaign"]').parentElement;
-  if (liveRoomLink) {
-    liveRoomLink.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.location.href = 'liveroom.html';
-    });
-  }
+/* Progress bar for scroll position */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(122, 77, 214, 0.1);
+  z-index: 1000;
+}
 
-  // Handle join room button if it exists
-  const joinRoomBtn = document.querySelector('.join-room-btn');
-  if (joinRoomBtn) {
-    joinRoomBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.location.href = 'liveroom.html';
-    });
+.scroll-progress-bar {
+  height: 100%;
+  background: #7a4dd6;
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
+/* Animate progress bars */
+@keyframes progressFill {
+  from {
+    width: 0;
   }
 }
 
-// Add this at the beginning of the file, right after the CONFIG object
-document.addEventListener('click', function(e) {
-  // Check if clicked element is the live room link or its children
-  const liveRoomLink = e.target.closest('.nav-link');
-  if (liveRoomLink && liveRoomLink.querySelector('span.material-symbols-outlined').textContent === 'campaign') {
-    e.preventDefault();
-    window.location.href = 'liveroom.html';
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
   }
-});
+  100% {
+    background-position: 200% 0;
+  }
+}
 
-function generateWaveform() {
-  const waveform = document.createElement('div');
-  waveform.className = 'waveform';
-  
-  // Generate bars for the waveform
-  for (let i = 0; i < 40; i++) {
-    const height = Math.floor(Math.random() * 40) + 10;
-    const bar = document.createElement('div');
-    bar.className = 'waveform-bar';
-    bar.style.height = `${height}px`;
-    // Add bar index for staggered animation
-    bar.style.setProperty('--bar-index', i);
-    waveform.appendChild(bar);
+.skeleton {
+  background: linear-gradient(90deg, 
+    #f0f0f0 25%, 
+    #e0e0e0 50%, 
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.skeleton-text:last-child {
+  width: 80%;
+}
+
+/* Voice Posts */
+.voice-post {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.voice-post:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--accent-color);
+}
+
+.voice-post:hover .play-button {
+  transform: translateY(-50%) scale(1.05);
+  background-color: var(--accent-color);
+}
+
+.voice-post:hover .waveform-bar {
+  animation: pulse 1s ease-in-out infinite;
+  animation-delay: calc(var(--bar-index) * 0.1s);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scaleY(1);
   }
-  
-  return waveform;
+  50% {
+    transform: scaleY(1.2);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.play-button {
+  transition: all 0.3s ease;
+}
+
+.waveform-bar {
+  transition: all 0.2s ease;
+  --bar-index: 0;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.user-info {
+  display: flex;
+  gap: 12px;
+}
+
+.post-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.author-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.post-author {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.post-handle, .post-time {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.more-options {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #536471;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.emotion-tag {
+  background-color: #ef4444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.post-content {
+  margin-bottom: 16px;
+}
+
+.post-text {
+  color: #0f172a;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.audio-container {
+  margin: 16px 0;
+  background: #1E1E1E;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.audio-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.play-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.play-button .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.waveform {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 40px;
+}
+
+.waveform-bar {
+  flex: 1;
+  height: 24px;
+  background: #e2e8f0;
+  border-radius: 2px;
+}
+
+.audio-time {
+  color: #64748b;
+  font-size: 0.875rem;
+  min-width: 80px;
+  text-align: right;
+}
+
+.post-actions {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.action-count {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.like-btn:hover {
+  color: #ef4444;
+}
+
+.reply-btn:hover {
+  color: #3b82f6;
+}
+
+.repost-btn:hover {
+  color: #22c55e;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .voice-post {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .post-author {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .post-text {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .audio-container {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .waveform-bar {
+  background: #334155;
+}
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 275px 1fr 350px;
+  min-height: 100vh;
+  max-width: 1265px;
+  margin: 0 auto;
+}
+
+/* Left Sidebar */
+.sidebar-left {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+}
+
+.logo-container {
+  padding: 12px;
+  width: 100%;
+}
+
+.logo {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0 12px;
+  color: var(--primary);
+}
+
+.echo-logo {
+  width: 100%;
+  height: 100%;
+}
+
+.echo-logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Sound wave styles */
+.sound-wave {
+  fill: currentColor;
+}
+
+.sound-wave rect {
+  transform-origin: bottom;
+  animation: waveAnimation 1.2s ease-in-out infinite;
+}
+
+/* Logo text styles */
+.logo-text {
+  font-family: 'Arial', sans-serif;
+  font-size: 42px;
+  font-weight: 500;
+  font-style: italic;
+  fill: currentColor;
+}
+
+.logo-subtext {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  fill: currentColor;
+  text-transform: uppercase;
+}
+
+/* Wave animation timing - slightly faster */
+.sound-wave rect:nth-child(1) { animation-delay: 0.0s; }
+.sound-wave rect:nth-child(2) { animation-delay: 0.15s; }
+.sound-wave rect:nth-child(3) { animation-delay: 0.3s; }
+.sound-wave rect:nth-child(4) { animation-delay: 0.45s; }
+.sound-wave rect:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes waveAnimation {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.5);
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .logo {
+  color: white;
+}
+
+[data-theme="dark"] .logo-text,
+[data-theme="dark"] .logo-subtext {
+  fill: white;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px;
+  border-radius: 9999px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 20px;
+  transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+  background-color: var(--bg-secondary);
+}
+
+.nav-link.active {
+  font-weight: 700;
+}
+
+.record-btn {
+  margin-top: 16px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.record-btn:hover {
+  background-color: #1a8cd8;
+}
+
+/* Main Content */
+.main-content {
+  border-right: 1px solid var(--border-color);
+  min-height: 100vh;
+}
+
+.main-header {
+  position: sticky;
+  top: 0;
+  background-color: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Voice Composer */
+.voice-composer {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.composer-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.composer-prompt {
+  color: var(--text-secondary);
+  font-size: 20px;
+}
+
+.record-controls {
+  display: flex;
+  gap: 8px;
+  margin-left: 60px;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  background: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.control-btn:hover:not(:disabled) {
+  background-color: var(--bg-secondary);
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  margin-left: 60px;
+}
+
+.share-btn {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.share-btn:not(:disabled) {
+  opacity: 1;
+}
+
+.share-btn:hover:not(:disabled) {
+  background-color: #1a8cd8;
+}
+
+/* Right Sidebar */
+.sidebar-right {
+  padding: 12px 16px;
+}
+
+/* Search Container */
+.search-container {
+  position: relative;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.search-container .material-symbols-outlined {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.search-container input[type="search"] {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.search-container input[type="search"]::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-container input[type="search"]:focus {
+  outline: none;
+  background-color: var(--bg-primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+[data-theme="dark"] .search-container input[type="search"] {
+  background-color: #111111;
+  border-color: #222222;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .search-container input[type="search"]:focus {
+  background-color: #1A1A1A;
+  border-color: #333333;
+}
+
+/* Cards in Right Sidebar */
+.premium-card,
+.trending-card,
+.follow-card {
+  background-color: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.premium-card h2,
+.trending-card h2,
+.follow-card h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.premium-btn {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.premium-btn:hover {
+  background-color: #1a8cd8;
+}
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 8px 0;
+}
+
+.dark-mode-toggle:hover {
+  background: var(--bg-primary);
+  border-color: var(--primary);
+}
+
+.dark-mode-toggle .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.dark-mode-toggle .toggle-text {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+/* Update main content areas */
+[data-theme="dark"] .main-content,
+[data-theme="dark"] .sidebar-left,
+[data-theme="dark"] .sidebar-right {
+  background-color: var(--bg-primary);
+}
+
+[data-theme="dark"] .main-header {
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(16px);
+}
+
+/* Update cards and containers */
+[data-theme="dark"] .card,
+[data-theme="dark"] .voice-composer,
+[data-theme="dark"] .trending-card,
+[data-theme="dark"] .follow-card,
+[data-theme="dark"] .premium-card,
+[data-theme="dark"] .sidebar-card,
+[data-theme="dark"] .auth-form {
+  background-color: #111111;
+  border: 1px solid #222222;
+}
+
+/* Update hover states */
+[data-theme="dark"] .nav-link:hover,
+[data-theme="dark"] .voice-item:hover,
+[data-theme="dark"] .privacy-option:hover,
+[data-theme="dark"] .emotion-btn:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Update dialog backgrounds */
+[data-theme="dark"] .share-dialog {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+[data-theme="dark"] .share-dialog-content {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* Update search input */
+[data-theme="dark"] .search-container input[type="search"] {
+  background-color: #111111;
+  border-color: #222222;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .search-container input[type="search"]:focus {
+  background-color: #1A1A1A;
+  border-color: #333333;
+}
+
+/* Update audio player */
+[data-theme="dark"] .audio-container,
+[data-theme="dark"] .audio-player {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-panel {
+  background-color: var(--bg-secondary);
+}
+
+/* Update trending emotions section */
+[data-theme="dark"] .trending-emotions {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .emotion-item {
+  transition: background-color 0.2s ease;
+}
+
+[data-theme="dark"] .emotion-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Progress bar background */
+[data-theme="dark"] .progress-bar {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Emotion badges */
+.emotion-badge.joy {
+  color: var(--emotion-joy);
+  background: rgba(255, 112, 67, 0.1);
+}
+
+/* Progress bars */
+.progress-bar {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  height: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] .progress-bar.joy span {
+  background: var(--emotion-joy);
+}
+
+[data-theme="dark"] .emotion-item.joy .label {
+  color: var(--emotion-joy);
+}
+
+/* Audio control buttons */
+[data-theme="dark"] .audio-control-button {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .audio-control-button:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .audio-control-button svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* Audio icons */
+[data-theme="dark"] .audio-icon {
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+[data-theme="dark"] .audio-icon:hover {
+  opacity: 0.9;
+}
+
+/* Menu button (three dots) - Updated */
+[data-theme="dark"] audio::-webkit-media-controls-overflow-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  filter: brightness(0) invert(1) !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+  background-color: transparent !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 4px !important;
+  margin: 0 4px !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] audio::-webkit-media-controls-panel {
+  background-color: #1A1A1A !important;
+}
+
+/* Ensure the icon is visible in both light and dark modes */
+[data-theme="dark"] audio::-webkit-media-controls-overflow-button::before {
+  content: "⋮" !important;
+  font-size: 24px !important;
+  color: #FFFFFF !important;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Hide unnecessary controls */
+[data-theme="dark"] audio::-webkit-media-controls-toggle-closed-captions-button,
+[data-theme="dark"] audio::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+}
+
+/* Audio controls styling */
+[data-theme="dark"] audio::-webkit-media-controls-panel {
+  background-color: #1A1A1A !important;
+}
+
+/* Target each control button individually */
+[data-theme="dark"] audio::-webkit-media-controls-play-button,
+[data-theme="dark"] audio::-webkit-media-controls-mute-button,
+[data-theme="dark"] audio::-webkit-media-controls-overflow-button {
+  filter: invert(100%) !important;
+  -webkit-filter: invert(100%) !important;
+  fill: white !important;
+  color: white !important;
+  background-color: transparent !important;
+}
+
+/* Hide unnecessary buttons */
+[data-theme="dark"] audio::-webkit-media-controls-toggle-closed-captions-button,
+[data-theme="dark"] audio::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+}
+
+/* Dark mode hover effects */
+[data-theme="dark"] .trending-emotions .emotion-item:hover,
+[data-theme="dark"] .voice-item:hover {
+  box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+}
+
+/* Profile View Styles */
+.profile-view {
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.profile-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profile-title h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.profile-title .subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.settings-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-btn:hover {
+  background-color: var(--bg-secondary);
+}
+
+.profile-banner {
+  height: 200px;
+  background: linear-gradient(135deg, #4e54c8, #8f94fb);
+  position: relative;
+}
+
+.banner-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
+}
+
+.profile-info-section {
+  padding: 0 16px;
+  margin-top: -80px;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.profile-avatar-container {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 4px solid var(--bg-primary);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-details h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.profile-handle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.profile-bio {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.profile-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.metadata-item .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.metadata-item a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.metadata-item a:hover {
+  text-decoration: underline;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.stat-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.stat-link:hover {
+  text-decoration: underline;
+}
+
+.stat-number {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.edit-profile-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-profile-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.more-options-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.more-options-btn:hover {
+  background: var(--bg-secondary);
+}
+
+/* Voice Stats Card */
+.voice-stats-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 0 16px 16px;
+}
+
+.voice-stats-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+}
+
+.stat-icon .material-symbols-outlined {
+  font-size: 20px;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Emotion Spectrum Card */
+.emotion-spectrum-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 0 16px 16px;
+}
+
+.emotion-spectrum-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.emotion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emotion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emotion-label {
+  width: 80px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.emotion-bar-container {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.emotion-bar {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.emotion-percentage {
+  width: 48px;
+  text-align: right;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Profile Tabs */
+.profile-tabs {
+  margin-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.tab-nav {
+  display: flex;
+  gap: 32px;
+  padding: 0 16px;
+}
+
+.tab-link {
+  padding: 16px 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  position: relative;
+}
+
+.tab-link.active {
+  color: var(--primary);
+}
+
+.tab-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 4px 4px 0 0;
+}
+
+.tab-content {
+  padding: 16px;
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .profile-view {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .avatar-container {
+  border-color: var(--bg-primary);
+}
+
+[data-theme="dark"] .voice-stats-item,
+[data-theme="dark"] .emotion-item .progress-bar {
+  background: var(--bg-secondary);
+}
+
+/* Bitmoji Styles */
+.bitmoji-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bitmoji-container:hover {
+  transform: scale(1.05) rotate(-5deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.bitmoji-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* SVG Animation */
+.bitmoji-container svg path,
+.bitmoji-container svg circle {
+  transition: all 0.3s ease;
+}
+
+.bitmoji-container:hover svg path[fill="#FFD180"],
+.bitmoji-container:hover svg path[fill="#4A148C"],
+.bitmoji-container:hover svg path[fill="#3E2723"],
+.bitmoji-container:hover svg path[fill="#212121"],
+.bitmoji-container:hover svg path[fill="#FF9800"],
+.bitmoji-container:hover svg path[fill="#795548"] {
+  transform: translateY(-2px);
+}
+
+.bitmoji-container:hover svg path[fill="#FF5252"],
+.bitmoji-container:hover svg path[fill="#6A1B9A"],
+.bitmoji-container:hover svg path[fill="#FF5722"],
+.bitmoji-container:hover svg path[fill="#424242"],
+.bitmoji-container:hover svg path[fill="#F57C00"],
+.bitmoji-container:hover svg path[fill="#8D6E63"] {
+  transform: scale(1.1);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .bitmoji-container {
+  background: var(--bg-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .bitmoji-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Profile avatar size override */
+.profile-avatar-container .bitmoji-container {
+  width: 140px;
+  height: 140px;
+}
+
+/* Live Room Banner */
+.live-room-banner {
+  background: linear-gradient(135deg, #9333EA, #E11D48);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 16px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.live-room-banner:hover {
+  transform: translateY(-2px);
+}
+
+.live-room-banner .close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.live-room-banner .close-btn:hover {
+  color: white;
+}
+
+.live-room-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.live-room-description {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 16px;
+}
+
+.live-room-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.live-room-stats .stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.join-room-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: #9333EA;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.2s ease;
+}
+
+.join-room-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.live-room-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.wave-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listeners-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.listener-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  margin-right: -8px;
+  background: rgba(255, 255, 255, 0.2);
 }
