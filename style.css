@@ -878,11 +878,10 @@ body {
 .emotion-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   padding: 8px;
   border-radius: 8px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 0 0 rgba(0,0,0,0);
 }
 
 .emotion-item:hover {
@@ -890,94 +889,39 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* Emotion Labels */
-[data-theme="dark"] .emotion-item .label {
-  color: #FFFFFF;
+.emotion-item .label {
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 15px;
-  min-width: 80px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Emotion-specific label colors */
-[data-theme="dark"] .emotion-item.excited .label {
-  color: #FF85B6;
-}
-
-[data-theme="dark"] .emotion-item.joy .label {
-  color: #FFD166;
-}
-
-[data-theme="dark"] .emotion-item.calm .label {
-  color: #48D1E8;
-}
-
-[data-theme="dark"] .emotion-item.annoyed .label {
-  color: #FF8585;
-}
-
-[data-theme="dark"] .emotion-item.sad .label {
-  color: #A685FF;
-}
-
-[data-theme="dark"] .emotion-item .percentage {
-  color: #8899A6;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-/* Progress bar styles */
-[data-theme="dark"] .progress-bar {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-[data-theme="dark"] .progress-bar span {
-  display: block;
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-/* Progress bar colors with gradients */
-[data-theme="dark"] .progress-bar.excited span {
-  background: linear-gradient(90deg, #FF4B91 0%, #FF85B6 100%);
-}
-
-[data-theme="dark"] .progress-bar.joy span {
-  background: linear-gradient(90deg, #FFB302 0%, #FFD166 100%);
-}
-
-[data-theme="dark"] .progress-bar.calm span {
-  background: linear-gradient(90deg, #00BCD4 0%, #48D1E8 100%);
-}
-
-[data-theme="dark"] .progress-bar.annoyed span {
-  background: linear-gradient(90deg, #EF4444 0%, #FF8585 100%);
-}
-
-[data-theme="dark"] .progress-bar.sad span {
-  background: linear-gradient(90deg, #7C4DFF 0%, #A685FF 100%);
+  width: 80px; /* Fixed width for consistent alignment */
 }
 
 .progress-bar {
   flex: 1;
   height: 8px;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  background-color: var(--bg-secondary);
+  border-radius: 100px;
   overflow: hidden;
 }
 
 .progress-bar span {
   display: block;
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.8s ease-in-out;
+  border-radius: 100px;
+  transition: width 0.3s ease;
 }
 
+.percentage {
+  width: 50px; /* Fixed width for consistent alignment */
+  text-align: right;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Progress bar colors */
 .progress-bar.excited span { 
-  background: #FF4D8D;
+  background: var(--emotion-excited);
 }
 
 .progress-bar.joy span { 
@@ -985,22 +929,15 @@ body {
 }
 
 .progress-bar.calm span { 
-  background: #4DD0E1;
+  background: var(--emotion-calm);
 }
 
 .progress-bar.annoyed span { 
-  background: #EF4444;
+  background: var(--emotion-annoyed);
 }
 
 .progress-bar.sad span { 
-  background: #7C4DFF;
-}
-
-.percentage {
-  min-width: 45px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-weight: 500;
+  background: var(--emotion-sad);
 }
 
 /* Trending Voices and Who to Follow */
@@ -1433,6 +1370,45 @@ html {
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.voice-post:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--accent-color);
+}
+
+.voice-post:hover .play-button {
+  transform: translateY(-50%) scale(1.05);
+  background-color: var(--accent-color);
+}
+
+.voice-post:hover .waveform-bar {
+  animation: pulse 1s ease-in-out infinite;
+  animation-delay: calc(var(--bar-index) * 0.1s);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.2);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.play-button {
+  transition: all 0.3s ease;
+}
+
+.waveform-bar {
+  transition: all 0.2s ease;
+  --bar-index: 0;
 }
 
 .post-header {
@@ -2526,9 +2502,9 @@ html {
 }
 
 /* Bitmoji Styles */
-.post-avatar.bitmoji {
-  width: 64px;
-  height: 64px;
+.bitmoji-container {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   overflow: hidden;
   background: var(--bg-secondary);
@@ -2537,47 +2513,164 @@ html {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.post-avatar.bitmoji:hover {
+.bitmoji-container:hover {
   transform: scale(1.05) rotate(-5deg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.post-avatar.bitmoji svg {
+.bitmoji-container svg {
   width: 100%;
   height: 100%;
   display: block;
 }
 
 /* SVG Animation */
-.post-avatar.bitmoji svg path,
-.post-avatar.bitmoji svg circle {
+.bitmoji-container svg path,
+.bitmoji-container svg circle {
   transition: all 0.3s ease;
 }
 
-.post-avatar.bitmoji:hover svg path[fill="#FFD180"],
-.post-avatar.bitmoji:hover svg path[fill="#4A148C"],
-.post-avatar.bitmoji:hover svg path[fill="#3E2723"],
-.post-avatar.bitmoji:hover svg path[fill="#212121"],
-.post-avatar.bitmoji:hover svg path[fill="#FF9800"],
-.post-avatar.bitmoji:hover svg path[fill="#795548"] {
+.bitmoji-container:hover svg path[fill="#FFD180"],
+.bitmoji-container:hover svg path[fill="#4A148C"],
+.bitmoji-container:hover svg path[fill="#3E2723"],
+.bitmoji-container:hover svg path[fill="#212121"],
+.bitmoji-container:hover svg path[fill="#FF9800"],
+.bitmoji-container:hover svg path[fill="#795548"] {
   transform: translateY(-2px);
 }
 
-.post-avatar.bitmoji:hover svg path[fill="#FF5252"],
-.post-avatar.bitmoji:hover svg path[fill="#6A1B9A"],
-.post-avatar.bitmoji:hover svg path[fill="#FF5722"],
-.post-avatar.bitmoji:hover svg path[fill="#424242"],
-.post-avatar.bitmoji:hover svg path[fill="#F57C00"],
-.post-avatar.bitmoji:hover svg path[fill="#8D6E63"] {
+.bitmoji-container:hover svg path[fill="#FF5252"],
+.bitmoji-container:hover svg path[fill="#6A1B9A"],
+.bitmoji-container:hover svg path[fill="#FF5722"],
+.bitmoji-container:hover svg path[fill="#424242"],
+.bitmoji-container:hover svg path[fill="#F57C00"],
+.bitmoji-container:hover svg path[fill="#8D6E63"] {
   transform: scale(1.1);
 }
 
 /* Dark mode adjustments */
-[data-theme="dark"] .post-avatar.bitmoji {
+[data-theme="dark"] .bitmoji-container {
   background: var(--bg-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .post-avatar.bitmoji:hover {
+[data-theme="dark"] .bitmoji-container:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Profile avatar size override */
+.profile-avatar-container .bitmoji-container {
+  width: 140px;
+  height: 140px;
+}
+
+/* Live Room Banner */
+.live-room-banner {
+  background: linear-gradient(135deg, #9333EA, #E11D48);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 16px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.live-room-banner:hover {
+  transform: translateY(-2px);
+}
+
+.live-room-banner .close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.live-room-banner .close-btn:hover {
+  color: white;
+}
+
+.live-room-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.live-room-description {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 16px;
+}
+
+.live-room-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.live-room-stats .stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.join-room-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: #9333EA;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.2s ease;
+}
+
+.join-room-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.live-room-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.wave-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listeners-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.listener-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  margin-right: -8px;
+  background: rgba(255, 255, 255, 0.2);
 }
