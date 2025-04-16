@@ -3,119 +3,451 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Echo - Voice Messaging</title>
+  <title>Echo - Voice Social Platform</title>
   <!-- Link to external CSS -->
   <link rel="stylesheet" href="style.css" />
+  <!-- Google Material Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 <body>
-  <!-- Top Navigation Bar -->
-  <nav class="navbar">
-    <div class="logo">Echo</div>
-    <div class="nav-icons">
-      <!-- Placeholder icons - replace with real icons or images if you want -->
-      <span class="material-symbols-outlined">search</span>
-      <span class="material-symbols-outlined">person</span>
-    </div>
-  </nav>
-
-  <!-- Main container with feed + sidebar -->
-  <div class="container">
-    <!-- Feed Section -->
-    <div class="feed">
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="foryou">For You</button>
-        <button class="tab-btn" data-tab="following">Following</button>
-        <button class="tab-btn" data-tab="trending">Trending</button>
+  <div class="layout">
+    <!-- Left Sidebar -->
+    <nav class="sidebar-left">
+      <div class="logo">
+        <span class="material-symbols-outlined">mic</span>
       </div>
+      <div class="nav-links">
+        <a href="#" class="nav-link active">
+          <span class="material-symbols-outlined">home</span>
+          <span>Home</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span class="material-symbols-outlined">search</span>
+          <span>Explore</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span class="material-symbols-outlined">notifications</span>
+          <span>Notifications</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span class="material-symbols-outlined">mail</span>
+          <span>Messages</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span class="material-symbols-outlined">bookmark</span>
+          <span>Bookmarks</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span class="material-symbols-outlined">group</span>
+          <span>Communities</span>
+        </a>
+        <a href="#" class="nav-link" id="profileLink">
+          <span class="material-symbols-outlined">person</span>
+          <span>Profile</span>
+        </a>
+        <button id="darkModeToggle" class="dark-mode-toggle">
+          <span class="material-symbols-outlined">dark_mode</span>
+          <span class="toggle-text">Dark Mode</span>
+        </button>
+        <button class="record-btn">
+          <span class="material-symbols-outlined">mic</span>
+          Record
+        </button>
+      </div>
+    </nav>
 
-      <!-- Share Voice Card -->
-      <div class="card share-voice">
-        <h3>Share your voice</h3>
-        <p>Record a new Echo</p>
-        <!-- Recording Section -->
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="main-header">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="foryou">For You</button>
+          <button class="tab-btn" data-tab="trending">Trending</button>
+          <button class="tab-btn" data-tab="following">Following</button>
+        </div>
+      </header>
+
+      <!-- Voice Composer -->
+      <div class="voice-composer">
+        <div class="composer-header">
+          <img src="https://i.pravatar.cc/150?img=12" alt="Your profile picture" class="user-avatar">
+          <div class="composer-prompt">What's happening?</div>
+        </div>
         <div class="record-controls">
-          <button id="recordButton">Tap to Record</button>
-          <button id="stopButton" disabled>Stop</button>
-          <p id="status">Tap and hold to record your voice</p>
+          <button id="recordButton" class="control-btn" aria-label="Start Recording">
+            <span class="material-symbols-outlined">mic</span>
+            <span>Record Voice</span>
+          </button>
+          <button id="stopButton" class="control-btn" disabled aria-label="Stop Recording">
+            <span class="material-symbols-outlined">stop</span>
+            <span>Stop</span>
+          </button>
+          <button id="playButton" class="control-btn" disabled aria-label="Play Recording">
+            <span class="material-symbols-outlined">play_arrow</span>
+            <span>Preview</span>
+          </button>
+        </div>
+        <div class="composer-footer">
+          <div id="status" class="status-text">Record your voice...</div>
+          <button id="shareButton" class="share-btn" disabled>Share</button>
+        </div>
+
+        <!-- Share Options Dialog -->
+        <div id="shareDialog" class="share-dialog" style="display: none;">
+          <div class="share-dialog-content">
+            <div class="dialog-header">
+              <h3>Share Your Voice</h3>
+              <button class="close-dialog" aria-label="Close dialog">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div class="privacy-options">
+              <h4>Who can see this?</h4>
+              <div class="option-list">
+                <label class="privacy-option">
+                  <input type="radio" name="privacy" value="public" checked>
+                  <span class="material-symbols-outlined">public</span>
+                  <div class="option-text">
+                    <strong>Everyone</strong>
+                    <span>Anyone on Echo can see this</span>
+                  </div>
+                </label>
+                
+                <label class="privacy-option">
+                  <input type="radio" name="privacy" value="followers">
+                  <span class="material-symbols-outlined">group</span>
+                  <div class="option-text">
+                    <strong>Followers only</strong>
+                    <span>Only your followers can see this</span>
+                  </div>
+                </label>
+                
+                <label class="privacy-option">
+                  <input type="radio" name="privacy" value="private">
+                  <span class="material-symbols-outlined">lock</span>
+                  <div class="option-text">
+                    <strong>Private</strong>
+                    <span>Only you can see this</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="emotion-selection">
+              <h4>How are you feeling?</h4>
+              <div class="emotion-list">
+                <button class="emotion-btn" data-emotion="excited">
+                  <span class="material-symbols-outlined">sentiment_excited</span>
+                  Excited
+                </button>
+                <button class="emotion-btn" data-emotion="joy">
+                  <span class="material-symbols-outlined">sentiment_very_satisfied</span>
+                  Joy
+                </button>
+                <button class="emotion-btn" data-emotion="calm">
+                  <span class="material-symbols-outlined">sentiment_satisfied</span>
+                  Calm
+                </button>
+                <button class="emotion-btn" data-emotion="annoyed">
+                  <span class="material-symbols-outlined">sentiment_dissatisfied</span>
+                  Annoyed
+                </button>
+                <button class="emotion-btn" data-emotion="sad">
+                  <span class="material-symbols-outlined">sentiment_sad</span>
+                  Sad
+                </button>
+              </div>
+            </div>
+
+            <div class="dialog-footer">
+              <button class="cancel-share">Cancel</button>
+              <button class="confirm-share">Share Voice</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Feed Items will be inserted here dynamically -->
-      <div id="feedContainer">
-        <!-- Sample feed items (hardcoded) -->
-        <!-- We'll also programmatically add new ones via script.js -->
-      </div>
-    </div>
+      <!-- Feed -->
+      <div id="feedContainer" class="feed"></div>
+
+      <!-- Profile View Template (Initially Hidden) -->
+      <template id="profileViewTemplate">
+        <div class="profile-view">
+          <!-- Header with name and settings -->
+          <div class="profile-header-top">
+            <div class="profile-title">
+              <h1>Alex Morgan</h1>
+              <div class="subtitle">5.2K Voice Notes</div>
+            </div>
+            <button class="settings-btn">
+              <span class="material-symbols-outlined">settings</span>
+            </button>
+          </div>
+
+          <!-- Profile Banner -->
+          <div class="profile-banner">
+            <div class="banner-gradient"></div>
+          </div>
+
+          <!-- Profile Info Section -->
+          <div class="profile-info-section">
+            <div class="profile-avatar-container">
+              <img src="assets/avatar.png" alt="Alex Morgan" class="profile-avatar">
+            </div>
+            
+            <div class="profile-details">
+              <h2>Alex Morgan</h2>
+              <span class="profile-handle">@alexmorgan</span>
+              
+              <p class="profile-bio">
+                Voice creator sharing thoughts on technology, design, and everyday life. Join me on this audio journey!
+              </p>
+              
+              <div class="profile-metadata">
+                <span class="metadata-item">
+                  <span class="material-symbols-outlined">calendar_today</span>
+                  Joined February 2024
+                </span>
+                <span class="metadata-item">
+                  <span class="material-symbols-outlined">location_on</span>
+                  San Francisco, CA
+                </span>
+                <span class="metadata-item">
+                  <span class="material-symbols-outlined">link</span>
+                  <a href="https://alexmorgan.com" target="_blank">alexmorgan.com</a>
+                </span>
+              </div>
+
+              <div class="profile-stats">
+                <a href="#" class="stat-link"><span class="stat-number">342</span> Following</a>
+                <a href="#" class="stat-link"><span class="stat-number">5.2K</span> Followers</a>
+              </div>
+
+              <button class="edit-profile-btn">Edit Profile</button>
+              <button class="more-options-btn">
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Voice Stats Card -->
+          <div class="voice-stats-card">
+            <h3>Voice Stats</h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <span class="material-symbols-outlined">mic</span>
+                </div>
+                <div class="stat-value">2</div>
+                <div class="stat-label">Voice Notes</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <span class="material-symbols-outlined">chat</span>
+                </div>
+                <div class="stat-value">1.3K</div>
+                <div class="stat-label">Listens</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <span class="material-symbols-outlined">favorite</span>
+                </div>
+                <div class="stat-value">576</div>
+                <div class="stat-label">Reactions</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <span class="material-symbols-outlined">trending_up</span>
+                </div>
+                <div class="stat-value">Excited</div>
+                <div class="stat-label">Top Emotion</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emotion Spectrum -->
+          <div class="emotion-spectrum-card">
+            <h3>Your Emotion Spectrum</h3>
+            <div class="emotion-list">
+              <div class="emotion-item">
+                <div class="emotion-label">Excited</div>
+                <div class="emotion-bar-container">
+                  <div class="emotion-bar" style="width: 50%"></div>
+                </div>
+                <div class="emotion-percentage">50%</div>
+              </div>
+              <div class="emotion-item">
+                <div class="emotion-label">Calm</div>
+                <div class="emotion-bar-container">
+                  <div class="emotion-bar" style="width: 50%"></div>
+                </div>
+                <div class="emotion-percentage">50%</div>
+              </div>
+              <div class="emotion-item">
+                <div class="emotion-label">Joy</div>
+                <div class="emotion-bar-container">
+                  <div class="emotion-bar" style="width: 0%"></div>
+                </div>
+                <div class="emotion-percentage">0%</div>
+              </div>
+              <div class="emotion-item">
+                <div class="emotion-label">Annoyed</div>
+                <div class="emotion-bar-container">
+                  <div class="emotion-bar" style="width: 0%"></div>
+                </div>
+                <div class="emotion-percentage">0%</div>
+              </div>
+              <div class="emotion-item">
+                <div class="emotion-label">Sad</div>
+                <div class="emotion-bar-container">
+                  <div class="emotion-bar" style="width: 0%"></div>
+                </div>
+                <div class="emotion-percentage">0%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Tabs -->
+          <div class="profile-tabs">
+            <nav class="tab-nav">
+              <a href="#" class="tab-link active">Voice Notes</a>
+              <a href="#" class="tab-link">Replies</a>
+              <a href="#" class="tab-link">Favorites</a>
+            </nav>
+            
+            <div class="tab-content">
+              <!-- Voice posts will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </template>
+    </main>
 
     <!-- Right Sidebar -->
-    <div class="sidebar">
-      <!-- Trending Emotions -->
-      <div class="sidebar-card">
-        <h4>Trending Emotions</h4>
-        <ul class="trending-emotions">
-          <!-- The progress bars and percentages are just examples -->
-          <li class="emotion-item">
-            <div class="label">Excited</div>
-            <div class="progress-bar excited"><span style="width:80%"></span></div>
-            <div class="percentage">+24%</div>
-          </li>
-          <li class="emotion-item">
-            <div class="label">Joy</div>
-            <div class="progress-bar joy"><span style="width:70%"></span></div>
-            <div class="percentage">+18%</div>
-          </li>
-          <li class="emotion-item">
-            <div class="label">Calm</div>
-            <div class="progress-bar calm"><span style="width:60%"></span></div>
-            <div class="percentage">+12%</div>
-          </li>
-          <li class="emotion-item">
-            <div class="label">Annoyed</div>
-            <div class="progress-bar annoyed"><span style="width:40%"></span></div>
-            <div class="percentage">+3%</div>
-          </li>
-          <li class="emotion-item">
-            <div class="label">Sad</div>
-            <div class="progress-bar sad"><span style="width:50%"></span></div>
-            <div class="percentage">+5%</div>
-          </li>
-        </ul>
+    <aside class="sidebar-right">
+      <!-- Search Bar -->
+      <div class="search-container">
+        <span class="material-symbols-outlined">search</span>
+        <input type="search" placeholder="Search Echo">
       </div>
 
-      <!-- Voices to Follow -->
-      <div class="sidebar-card">
-        <h4>Voices to Follow</h4>
-        <ul class="voices-list">
-          <li class="voice-item">
-            <div class="avatar"></div>
-            <div>
-              <strong>Marcus Kim</strong>
-              <p>Tech Guru</p>
+      <!-- Trending Emotions -->
+      <div class="trending-card">
+        <h2>Trending Emotions</h2>
+        <div class="trending-emotions">
+          <div class="emotion-item">
+            <span class="label">Excited</span>
+            <div class="progress-bar excited">
+              <span style="width: 80%"></span>
             </div>
-          </li>
-          <li class="voice-item">
-            <div class="avatar"></div>
-            <div>
-              <strong>Aisha Johnson</strong>
-              <p>Fitness Coach</p>
+            <span class="percentage">+24%</span>
+          </div>
+          <div class="emotion-item">
+            <span class="label">Joy</span>
+            <div class="progress-bar joy">
+              <span style="width: 65%"></span>
             </div>
-          </li>
-          <li class="voice-item">
-            <div class="avatar"></div>
-            <div>
-              <strong>David Wu</strong>
-              <p>Music Producer</p>
+            <span class="percentage">+18%</span>
+          </div>
+          <div class="emotion-item">
+            <span class="label">Calm</span>
+            <div class="progress-bar calm">
+              <span style="width: 45%"></span>
             </div>
-          </li>
-        </ul>
+            <span class="percentage">+12%</span>
+          </div>
+          <div class="emotion-item">
+            <span class="label">Annoyed</span>
+            <div class="progress-bar annoyed">
+              <span style="width: 25%"></span>
+            </div>
+            <span class="percentage">+3%</span>
+          </div>
+          <div class="emotion-item">
+            <span class="label">Sad</span>
+            <div class="progress-bar sad">
+              <span style="width: 35%"></span>
+            </div>
+            <span class="percentage">+5%</span>
+          </div>
+        </div>
       </div>
+
+      <!-- Trending Voices -->
+      <div class="trending-card">
+        <h2>Trending Voices</h2>
+        <div class="voices-list">
+          <div class="voice-item">
+            <img src="https://i.pravatar.cc/150?img=1" alt="User avatar" class="post-avatar">
+            <div class="voice-info">
+              <div class="voice-name">Sarah Chen</div>
+              <div class="voice-bio">Tech enthusiast & podcaster</div>
+            </div>
+          </div>
+          <div class="voice-item">
+            <img src="https://i.pravatar.cc/150?img=2" alt="User avatar" class="post-avatar">
+            <div class="voice-info">
+              <div class="voice-name">Marcus Johnson</div>
+              <div class="voice-bio">Music producer & vocalist</div>
+            </div>
+          </div>
+          <div class="voice-item">
+            <img src="https://i.pravatar.cc/150?img=3" alt="User avatar" class="post-avatar">
+            <div class="voice-info">
+              <div class="voice-name">Elena Rodriguez</div>
+              <div class="voice-bio">Storyteller & voice artist</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Who to Follow -->
+      <div class="follow-card">
+        <h2>Who to Follow</h2>
+        <div class="voices-list">
+          <div class="voice-item">
+            <img src="https://i.pravatar.cc/150?img=4" alt="User avatar" class="post-avatar">
+            <div class="voice-info">
+              <div class="voice-name">David Kim</div>
+              <div class="voice-bio">Audio engineer & creator</div>
+            </div>
+          </div>
+          <div class="voice-item">
+            <img src="https://i.pravatar.cc/150?img=5" alt="User avatar" class="post-avatar">
+            <div class="voice-info">
+              <div class="voice-name">Maya Patel</div>
+              <div class="voice-bio">Voice coach & mentor</div>
+            </div>
+          </div>
+          <div class="voice-item">
+            <img src="https://i.pravatar.cc/150?img=6" alt="User avatar" class="post-avatar">
+            <div class="voice-info">
+              <div class="voice-name">Alex Thompson</div>
+              <div class="voice-bio">Sound designer & artist</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="auth-modal" id="authModal" style="display: none;">
+    <div class="auth-form">
+      <div class="auth-header">
+        <h2>Login</h2>
+        <button class="close-btn" onclick="closeAuthModal()" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <input type="email" placeholder="Email" required>
+      <input type="password" placeholder="Password" required>
+      <button onclick="handleLogin()">Login</button>
+      <p class="toggle-form">Need an account? Sign up</p>
     </div>
   </div>
 
   <!-- Link to external JavaScript -->
   <script src="script.js"></script>
-  <!-- For demo icons (Material Icons) - optional -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 </body>
 </html>
