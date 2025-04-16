@@ -13,17 +13,32 @@
   <div class="layout">
     <!-- Left Sidebar -->
     <nav class="sidebar-left">
-      <div class="logo">
-        <span class="material-symbols-outlined">mic</span>
+      <div class="logo-container">
+        <div class="logo">
+          <div class="echo-logo">
+            <svg viewBox="0 0 500 150" xmlns="http://www.w3.org/2000/svg">
+              <!-- Sound Wave Icon -->
+              <g class="sound-wave" transform="translate(20, 55)">
+                <rect x="0" y="12" width="4" height="20"/>
+                <rect x="8" y="8" width="4" height="30"/>
+                <rect x="16" y="0" width="4" height="45"/>
+                <rect x="24" y="8" width="4" height="30"/>
+                <rect x="32" y="12" width="4" height="20"/>
+              </g>
+              
+              <!-- Echo Text -->
+              <text x="60" y="95" class="logo-text">Echo</text>
+              
+              <!-- Emotions Unmuted Text -->
+              <text x="60" y="125" class="logo-subtext">EMOTIONS UNMUTED</text>
+            </svg>
+          </div>
+        </div>
       </div>
       <div class="nav-links">
         <a href="#" class="nav-link active">
           <span class="material-symbols-outlined">home</span>
           <span>Home</span>
-        </a>
-        <a href="#" class="nav-link">
-          <span class="material-symbols-outlined">search</span>
-          <span>Explore</span>
         </a>
         <a href="#" class="nav-link">
           <span class="material-symbols-outlined">notifications</span>
@@ -34,12 +49,20 @@
           <span>Messages</span>
         </a>
         <a href="#" class="nav-link">
-          <span class="material-symbols-outlined">bookmark</span>
-          <span>Bookmarks</span>
+          <span class="material-symbols-outlined">auto_stories</span>
+          <span>Voice Stories</span>
         </a>
         <a href="#" class="nav-link">
-          <span class="material-symbols-outlined">group</span>
-          <span>Communities</span>
+          <span class="material-symbols-outlined">campaign</span>
+          <span>Live Rooms</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span class="material-symbols-outlined">mood</span>
+          <span>Emotion Filter</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span class="material-symbols-outlined">bookmark</span>
+          <span>Saved</span>
         </a>
         <a href="#" class="nav-link" id="profileLink">
           <span class="material-symbols-outlined">person</span>
@@ -378,21 +401,51 @@
         <h2>Trending Voices</h2>
         <div class="voices-list">
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=1" alt="User avatar" class="post-avatar">
+            <div class="post-avatar bitmoji">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Sarah - Tech Girl Bitmoji -->
+                <circle cx="50" cy="50" r="45" fill="#FFE0B2"/> <!-- Face -->
+                <path d="M50 20c-11 0-20 15-20 25s9 20 20 20 20-10 20-20-9-25-20-25z" fill="#FFD180"/> <!-- Hair -->
+                <path d="M35 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z M55 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z" fill="#5D4037"/> <!-- Eyes -->
+                <path d="M50 65c-8 0-15-2-15-2s2 7 15 7 15-7 15-7-7 2-15 2z" fill="#FF5252"/> <!-- Smile -->
+                <path d="M20 40c0 0 10-5 15-5 5 0 5 5 0 5-5 0-15 0-15 0z M80 40c0 0-10-5-15-5-5 0-5 5 0 5 5 0 15 0 15 0z" fill="#90A4AE"/> <!-- Glasses -->
+                <circle cx="50" cy="50" r="48" fill="none" stroke="#78909C" stroke-width="4"/> <!-- Tech Circle -->
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Sarah Chen</div>
               <div class="voice-bio">Tech enthusiast & podcaster</div>
             </div>
           </div>
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=2" alt="User avatar" class="post-avatar">
+            <div class="post-avatar bitmoji">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Marcus - Music Guy Bitmoji -->
+                <circle cx="50" cy="50" r="45" fill="#8D6E63"/> <!-- Face -->
+                <path d="M50 15c-15 0-25 10-25 20s10 25 25 25 25-15 25-25-10-20-25-20z" fill="#4A148C"/> <!-- Hair -->
+                <path d="M35 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z M55 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z" fill="#3E2723"/> <!-- Eyes -->
+                <path d="M50 60c-8 0-15 2-15 2s2 8 15 8 15-8 15-8-7-2-15-2z" fill="#6A1B9A"/> <!-- Smile -->
+                <path d="M25 35c0 0 15-10 20-10 5 0 5 5 0 5-5 0-20 5-20 5z" fill="#CE93D8"/> <!-- Headphones -->
+                <circle cx="50" cy="50" r="48" fill="none" stroke="#4A148C" stroke-width="4"/> <!-- Music Circle -->
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Marcus Johnson</div>
               <div class="voice-bio">Music producer & vocalist</div>
             </div>
           </div>
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=3" alt="User avatar" class="post-avatar">
+            <div class="post-avatar bitmoji">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Elena - Storyteller Bitmoji -->
+                <circle cx="50" cy="50" r="45" fill="#FFAB91"/> <!-- Face -->
+                <path d="M50 15c-20 0-30 15-30 25s10 30 30 30 30-20 30-30-10-25-30-25z" fill="#3E2723"/> <!-- Hair -->
+                <path d="M35 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z M55 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z" fill="#3E2723"/> <!-- Eyes -->
+                <path d="M50 60c-8 0-15 2-15 2s2 8 15 8 15-8 15-8-7-2-15-2z" fill="#FF5722"/> <!-- Smile -->
+                <path d="M20 30c0 0 20-5 30-5 10 0 30 5 30 5" fill="none" stroke="#FF8A65" stroke-width="4"/> <!-- Story Arc -->
+                <circle cx="50" cy="50" r="48" fill="none" stroke="#FF8A65" stroke-width="4"/> <!-- Story Circle -->
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Elena Rodriguez</div>
               <div class="voice-bio">Storyteller & voice artist</div>
@@ -406,21 +459,51 @@
         <h2>Who to Follow</h2>
         <div class="voices-list">
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=4" alt="User avatar" class="post-avatar">
+            <div class="post-avatar bitmoji">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- David - Audio Engineer Bitmoji -->
+                <circle cx="50" cy="50" r="45" fill="#BCAAA4"/> <!-- Face -->
+                <path d="M50 20c-15 0-25 10-25 20s10 20 25 20 25-10 25-20-10-20-25-20z" fill="#212121"/> <!-- Hair -->
+                <path d="M35 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z M55 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z" fill="#3E2723"/> <!-- Eyes -->
+                <path d="M50 65c-8 0-15-2-15-2s2 7 15 7 15-7 15-7-7 2-15 2z" fill="#424242"/> <!-- Smile -->
+                <path d="M20 30c0 0 20 10 30 10 10 0 30-10 30-10" fill="none" stroke="#616161" stroke-width="4"/> <!-- Audio Wave -->
+                <circle cx="50" cy="50" r="48" fill="none" stroke="#616161" stroke-width="4"/> <!-- Engineer Circle -->
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">David Kim</div>
               <div class="voice-bio">Audio engineer & creator</div>
             </div>
           </div>
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=5" alt="User avatar" class="post-avatar">
+            <div class="post-avatar bitmoji">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Maya - Voice Coach Bitmoji -->
+                <circle cx="50" cy="50" r="45" fill="#FFE0B2"/> <!-- Face -->
+                <path d="M50 15c-20 0-30 15-30 25s10 30 30 30 30-20 30-30-10-25-30-25z" fill="#FF9800"/> <!-- Hair -->
+                <path d="M35 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z M55 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z" fill="#3E2723"/> <!-- Eyes -->
+                <path d="M50 60c-8 0-15 2-15 2s2 8 15 8 15-8 15-8-7-2-15-2z" fill="#F57C00"/> <!-- Smile -->
+                <path d="M30 35c0 0 10-5 20-5 10 0 20 5 20 5" fill="none" stroke="#FFA726" stroke-width="4"/> <!-- Voice Wave -->
+                <circle cx="50" cy="50" r="48" fill="none" stroke="#FFA726" stroke-width="4"/> <!-- Coach Circle -->
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Maya Patel</div>
               <div class="voice-bio">Voice coach & mentor</div>
             </div>
           </div>
           <div class="voice-item">
-            <img src="https://i.pravatar.cc/150?img=6" alt="User avatar" class="post-avatar">
+            <div class="post-avatar bitmoji">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Alex - Sound Designer Bitmoji -->
+                <circle cx="50" cy="50" r="45" fill="#FFCCBC"/> <!-- Face -->
+                <path d="M50 20c-15 0-25 10-25 20s10 25 25 25 25-15 25-25-10-20-25-20z" fill="#795548"/> <!-- Hair -->
+                <path d="M35 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z M55 45c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5z" fill="#3E2723"/> <!-- Eyes -->
+                <path d="M50 65c-8 0-15-2-15-2s2 7 15 7 15-7 15-7-7 2-15 2z" fill="#8D6E63"/> <!-- Smile -->
+                <path d="M25 35c0 0 15-10 25-10 10 0 25 10 25 10" fill="none" stroke="#8D6E63" stroke-width="4"/> <!-- Sound Wave -->
+                <circle cx="50" cy="50" r="48" fill="none" stroke="#8D6E63" stroke-width="4"/> <!-- Designer Circle -->
+              </svg>
+            </div>
             <div class="voice-info">
               <div class="voice-name">Alex Thompson</div>
               <div class="voice-bio">Sound designer & artist</div>
