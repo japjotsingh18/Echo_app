@@ -33,7 +33,7 @@
       border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
-      background: #0D1117;
+      background: #000000;
     }
 
     .message-header {
@@ -81,11 +81,17 @@
     }
 
     .tab-badge {
-      background: #7C3AED;
+      background: linear-gradient(135deg, #9333EA, #E11D48);
       color: white;
       padding: 2px 8px;
       border-radius: 12px;
       font-size: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .tab:hover .tab-badge {
+      background: linear-gradient(135deg, #7928CA, #C81E3C);
+      transform: scale(1.05);
     }
 
     .message-search {
@@ -100,6 +106,28 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      position: relative;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .search-container:hover {
+      background: #262A2F;
+      box-shadow: 0 4px 12px rgba(147, 51, 234, 0.1);
+      border: 1px solid rgba(147, 51, 234, 0.2);
+    }
+
+    .search-container:focus-within {
+      background: #262A2F;
+      border: 1px solid transparent;
+      border-image: linear-gradient(135deg, #9333EA, #E11D48) 1;
+      box-shadow: 0 4px 12px rgba(147, 51, 234, 0.15);
+    }
+
+    .search-container:focus-within .search-icon {
+      background: linear-gradient(135deg, #9333EA, #E11D48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .search-container input {
@@ -109,6 +137,27 @@
       font-size: 14px;
       width: 100%;
       outline: none;
+      padding-left: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .search-container input::placeholder {
+      color: var(--text-secondary);
+      transition: color 0.3s ease;
+    }
+
+    .search-container:hover input::placeholder,
+    .search-container:focus-within input::placeholder {
+      color: #9CA3AF;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      pointer-events: none;
     }
 
     .conversation-list {
@@ -123,15 +172,20 @@
       gap: 12px;
       cursor: pointer;
       border-bottom: 1px solid var(--border-color);
-      transition: background 0.2s;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
 
     .conversation-item:hover {
       background: #1A1D21;
+      transform: translateX(4px);
+      box-shadow: -4px 0 0 0 #9333EA;
     }
 
     .conversation-item.active {
       background: #1A1D21;
+      box-shadow: -4px 0 0 0 #9333EA;
     }
 
     .conversation-avatar {
@@ -151,17 +205,42 @@
       background: #22C55E;
       border: 2px solid #0D1117;
       border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .conversation-item:hover .online-indicator {
+      transform: scale(1.2);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+      border-color: #1A1D21;
     }
 
     .conversation-details {
       flex: 1;
       min-width: 0;
+      padding-right: 40px;
+      transition: transform 0.3s ease;
+    }
+
+    .conversation-item:hover .conversation-details {
+      transform: translateX(4px);
     }
 
     .conversation-name {
       font-weight: 600;
       color: var(--text-primary);
       margin-bottom: 4px;
+      transition: color 0.3s ease;
+    }
+
+    .conversation-item:hover .conversation-name {
+      background: linear-gradient(135deg, #9333EA, #E11D48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 600;
+    }
+
+    .conversation-item:hover .conversation-message {
+      color: #F9FAFB;
     }
 
     .conversation-message {
@@ -170,13 +249,14 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color 0.3s ease;
     }
 
     .chat-area {
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: #0D1117;
+      background: #000000;
     }
 
     .chat-header {
@@ -255,7 +335,7 @@
     }
 
     .message.sent .message-content {
-      background: #7C3AED;
+      background: linear-gradient(135deg, #9333EA, #E11D48);
       border-radius: 16px;
       border-bottom-right-radius: 4px;
     }
@@ -313,18 +393,18 @@
     }
 
     .send-btn {
-      color: #7C3AED;
+      color: #9333EA;
     }
 
     .send-btn:hover {
-      background: #7C3AED20;
-      color: #7C3AED;
+      background: rgba(147, 51, 234, 0.1);
+      color: #9333EA;
     }
 
     .new-message-btn {
       margin: 16px;
       padding: 12px;
-      background: #7C3AED;
+      background: linear-gradient(135deg, #9333EA, #E11D48);
       color: white;
       border: none;
       border-radius: 8px;
@@ -335,21 +415,50 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.2s;
+      transition: background 0.3s ease;
     }
 
     .new-message-btn:hover {
-      background: #6D28D9;
+      background: linear-gradient(135deg, #7928CA, #C81E3C);
+      transform: translateY(-1px);
     }
 
     /* Dark theme variables */
     :root {
-      --bg-primary: #0D1117;
+      --bg-dark: #000000;
+      --bg-primary: #000000;
       --bg-secondary: #1A1D21;
       --text-primary: #F9FAFB;
       --text-secondary: #9CA3AF;
       --border-color: #262A2F;
       --accent-color: #7C3AED;
+    }
+
+    .conversation-item {
+      position: relative;
+    }
+
+    .unread-badge {
+      background: linear-gradient(135deg, #9333EA, #E11D48);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      transform: none;
+      transition: all 0.3s ease;
+    }
+
+    .conversation-item:hover .unread-badge {
+      transform: scale(1.1);
+      background: linear-gradient(135deg, #7928CA, #C81E3C);
+      box-shadow: 0 2px 8px rgba(147, 51, 234, 0.3);
+    }
+
+    .tab {
+      cursor: pointer;
     }
   </style>
 </head>
@@ -425,8 +534,8 @@
 
           <div class="message-search">
             <div class="search-container">
-              <span class="material-symbols-outlined">search</span>
-              <input type="search" placeholder="Search messages">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input type="text" placeholder="Search messages">
             </div>
           </div>
 
@@ -502,6 +611,24 @@
               <div class="conversation-details">
                 <div class="conversation-name">Elena Rodriguez</div>
                 <div class="conversation-message">Check out this new filter I made...</div>
+              </div>
+            </div>
+
+            <div class="conversation-item">
+              <div class="conversation-avatar">
+                <div class="bitmoji-container">
+                  <svg viewBox="0 0 100 100" class="bitmoji">
+                    <circle cx="50" cy="50" r="45" fill="#B2DFDB"/>
+                    <circle cx="50" cy="45" r="35" fill="#80CBC4"/>
+                    <circle cx="35" cy="40" r="5" fill="#212121"/>
+                    <circle cx="65" cy="40" r="5" fill="#212121"/>
+                    <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="conversation-details">
+                <div class="conversation-name">David Kim</div>
+                <div class="conversation-message">Let's collaborate on the next voice project...</div>
               </div>
             </div>
           </div>
@@ -621,5 +748,316 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Get DOM elements
+    const messageInput = document.querySelector('.input-container input');
+    const sendButton = document.querySelector('.send-btn');
+    const chatMessages = document.querySelector('.chat-messages');
+    const searchInput = document.querySelector('.search-container input');
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    const chatUserName = document.querySelector('.chat-user-details h3');
+    const chatHeader = document.querySelector('.chat-header');
+
+    // Function to create a new message element
+    function createMessage(text, isSent = true) {
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isSent ? 'sent' : ''}`;
+      
+      messageDiv.innerHTML = `
+        ${!isSent ? `
+          <div class="message-avatar">
+            <div class="bitmoji-container">
+              <svg viewBox="0 0 100 100" class="bitmoji">
+                <circle cx="50" cy="50" r="45" fill="#FFD180"/>
+                <circle cx="50" cy="45" r="35" fill="#FFAB40"/>
+                <circle cx="35" cy="40" r="5" fill="#212121"/>
+                <circle cx="65" cy="40" r="5" fill="#212121"/>
+                <path d="M35 60 Q50 70 65 60" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        ` : ''}
+        <div class="message-content">
+          <div class="message-text">${text}</div>
+          <div class="message-time">${time}</div>
+        </div>
+      `;
+      
+      return messageDiv;
+    }
+
+    // Function to send message
+    function sendMessage() {
+      const messageText = messageInput.value.trim();
+      
+      if (messageText) {
+        // Create and append the new message
+        const newMessage = createMessage(messageText, true);
+        chatMessages.appendChild(newMessage);
+        
+        // Clear input
+        messageInput.value = '';
+        
+        // Scroll to bottom of chat
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Simulate received message after 1 second (for demo purposes)
+        setTimeout(() => {
+          const replyMessage = createMessage('This is an automated reply!', false);
+          chatMessages.appendChild(replyMessage);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1000);
+      }
+    }
+
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+    
+    // Send message on Enter key
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // Focus input when page loads
+    messageInput.focus();
+
+    // Function to filter conversations
+    function filterConversations(searchTerm) {
+        searchTerm = searchTerm.toLowerCase();
+        
+        conversationItems.forEach(item => {
+            const name = item.querySelector('.conversation-name').textContent.toLowerCase();
+            const message = item.querySelector('.conversation-message').textContent.toLowerCase();
+            
+            // Check if the search term matches either the name or message
+            if (name.includes(searchTerm) || message.includes(searchTerm)) {
+                item.style.display = 'flex'; // Show matching conversations
+                
+                // Highlight matching text (optional)
+                if (searchTerm !== '') {
+                    highlightText(item, searchTerm);
+                } else {
+                    // Remove highlighting if search is cleared
+                    removeHighlight(item);
+                }
+            } else {
+                item.style.display = 'none'; // Hide non-matching conversations
+            }
+        });
+    }
+
+    // Function to highlight matching text
+    function highlightText(item, searchTerm) {
+        const name = item.querySelector('.conversation-name');
+        const message = item.querySelector('.conversation-message');
+        
+        // Store original text if not already stored
+        if (!name.dataset.original) {
+            name.dataset.original = name.textContent;
+            message.dataset.original = message.textContent;
+        }
+        
+        // Highlight matching text in name
+        name.innerHTML = name.dataset.original.replace(
+            new RegExp(searchTerm, 'gi'),
+            match => `<span style="background-color: #7C3AED40">${match}</span>`
+        );
+        
+        // Highlight matching text in message
+        message.innerHTML = message.dataset.original.replace(
+            new RegExp(searchTerm, 'gi'),
+            match => `<span style="background-color: #7C3AED40">${match}</span>`
+        );
+    }
+
+    // Function to remove highlighting
+    function removeHighlight(item) {
+        const name = item.querySelector('.conversation-name');
+        const message = item.querySelector('.conversation-message');
+        
+        if (name.dataset.original) {
+            name.textContent = name.dataset.original;
+            message.textContent = message.dataset.original;
+        }
+    }
+
+    // Add event listener for search input
+    searchInput.addEventListener('input', (e) => {
+        filterConversations(e.target.value);
+        
+        // Show "no results" message if no conversations match
+        const visibleConversations = document.querySelectorAll('.conversation-item[style="display: flex;"]');
+        const conversationList = document.querySelector('.conversation-list');
+        const existingNoResults = conversationList.querySelector('.no-results');
+        
+        if (visibleConversations.length === 0 && e.target.value !== '') {
+            if (!existingNoResults) {
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.style.cssText = `
+                    padding: 16px;
+                    text-align: center;
+                    color: var(--text-secondary);
+                    font-size: 14px;
+                `;
+                noResults.textContent = 'No conversations found';
+                conversationList.appendChild(noResults);
+            }
+        } else if (existingNoResults) {
+            existingNoResults.remove();
+        }
+    });
+
+    // Clear search when ESC is pressed
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            searchInput.value = '';
+            filterConversations('');
+            searchInput.blur(); // Remove focus from search input
+        }
+    });
+
+    // Function to update chat header
+    function updateChatHeader(userName, isOnline) {
+        chatUserName.textContent = userName;
+        
+        // Update online status if needed
+        const existingStatus = chatHeader.querySelector('.online-status');
+        if (existingStatus) {
+            existingStatus.remove();
+        }
+        
+        if (isOnline) {
+            const onlineStatus = document.createElement('div');
+            onlineStatus.className = 'online-status';
+            onlineStatus.style.cssText = `
+                color: var(--text-secondary);
+                font-size: 14px;
+                margin-top: 4px;
+            `;
+            onlineStatus.textContent = 'Online';
+            chatUserName.parentElement.appendChild(onlineStatus);
+        }
+    }
+
+    // Add click event listeners to conversation items
+    conversationItems.forEach(item => {
+        item.addEventListener('click', () => {
+            // Remove active class from all conversations
+            conversationItems.forEach(conv => conv.classList.remove('active'));
+            
+            // Add active class to clicked conversation
+            item.classList.add('active');
+            
+            // Get user name and online status
+            const userName = item.querySelector('.conversation-name').textContent;
+            const isOnline = item.querySelector('.online-indicator') !== null;
+            
+            // Update chat header
+            updateChatHeader(userName, isOnline);
+            
+            // Clear existing chat messages (optional)
+            // chatMessages.innerHTML = '';
+            
+            // Load conversation history (you can add this functionality later)
+            // loadConversationHistory(userName);
+        });
+    });
+
+    // Add this to your existing JavaScript code
+    const tabs = document.querySelectorAll('.tab');
+    const allTab = document.querySelector('.tab:first-child');
+    const unreadTab = document.querySelector('.tab:last-child');
+
+    // Add unread message count to specific conversations
+    function initializeUnreadMessages() {
+        const unreadConversations = [
+            { name: 'Sarah Chen', count: 3 },
+            { name: 'Marcus Williams', count: 2 }
+        ];
+        
+        conversationItems.forEach(item => {
+            const name = item.querySelector('.conversation-name').textContent;
+            const unreadInfo = unreadConversations.find(conv => conv.name === name);
+            
+            if (unreadInfo) {
+                const badge = document.createElement('div');
+                badge.className = 'unread-badge';
+                badge.textContent = unreadInfo.count;
+                item.appendChild(badge);
+                item.classList.add('unread');
+            }
+        });
+    }
+
+    // Function to toggle between All and Unread tabs
+    function toggleTabs(showUnread) {
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        if (showUnread) {
+            unreadTab.classList.add('active');
+            // Show only unread conversations
+            conversationItems.forEach(item => {
+                if (item.classList.contains('unread')) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        } else {
+            allTab.classList.add('active');
+            // Show all conversations
+            conversationItems.forEach(item => {
+                item.style.display = 'flex';
+            });
+        }
+    }
+
+    // Add click event listeners to tabs
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const isUnreadTab = tab === unreadTab;
+            toggleTabs(isUnreadTab);
+        });
+    });
+
+    // Function to mark conversation as read when clicked
+    function markAsRead(conversationItem) {
+        const unreadBadge = conversationItem.querySelector('.unread-badge');
+        if (unreadBadge) {
+            unreadBadge.remove();
+            conversationItem.classList.remove('unread');
+            
+            // Update unread count in tab
+            const unreadCount = document.querySelectorAll('.conversation-item.unread').length;
+            const unreadBadgeTab = unreadTab.querySelector('.tab-badge');
+            unreadBadgeTab.textContent = unreadCount;
+        }
+    }
+
+    // Modify existing conversation click event listener
+    conversationItems.forEach(item => {
+        item.addEventListener('click', () => {
+            // Existing click handler code...
+            conversationItems.forEach(conv => conv.classList.remove('active'));
+            item.classList.add('active');
+            
+            const userName = item.querySelector('.conversation-name').textContent;
+            const isOnline = item.querySelector('.online-indicator') !== null;
+            updateChatHeader(userName, isOnline);
+            
+            // Mark as read when clicked
+            markAsRead(item);
+        });
+    });
+
+    // Initialize unread messages when page loads
+    initializeUnreadMessages();
+  </script>
 </body>
 </html>
