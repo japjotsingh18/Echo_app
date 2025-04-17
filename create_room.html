@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Room | Echo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-dark: #0d1117;
+      --panel-dark: #161b22;
+      --input-dark: #0a0c10;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --tag-bg: #1e2329;
+      --tag-hover: #2d3139;
+      --text-light: #e5e7eb;
+      --text-muted: #8b949e;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    main {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .back-btn {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9375rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .form-section, .settings-panel {
+      background-color: var(--panel-dark);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+    }
+
+    .form-section h2, .settings-panel h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+      font-size: 0.9375rem;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      background-color: var(--input-dark);
+      border: 1px solid transparent;
+      border-radius: 0.5rem;
+      color: var(--text-light);
+      font-size: 0.9375rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .tag-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.625rem;
+      margin-top: 0.5rem;
+    }
+
+    .tag {
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 0.5rem 0.875rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      color: var(--text-light);
+      position: relative;
+      overflow: hidden;
+      transform: translateY(0);
+    }
+
+    .tag:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .tag:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .tag::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.1), transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+
+    .tag:hover::after {
+      transform: translateX(100%);
+    }
+
+    .tag.selected {
+      background-color: #4477ff;
+      color: white;
+      box-shadow: 0 1px 4px rgba(68, 119, 255, 0.3);
+    }
+
+    .tag.selected:hover {
+      background-color: #3366ee;
+      box-shadow: 0 2px 8px rgba(68, 119, 255, 0.4);
+    }
+
+    .tag.selected:active {
+      background-color: #2255dd;
+      box-shadow: 0 1px 4px rgba(68, 119, 255, 0.3);
+    }
+
+    input[type="range"] {
+      width: calc(100% - 60px);  /* Make room for the value display */
+      margin-bottom: 1.5rem;
+      -webkit-appearance: none;
+      background: var(--tag-bg);
+      height: 4px;
+      border-radius: 2px;
+      vertical-align: middle;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+
+    .range-container {
+      position: relative;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .range-value {
+      color: var(--text-light);
+      font-size: 0.9375rem;
+      min-width: 70px;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .range-value .time {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .privacy-options {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .radio-option input[type="radio"] {
+      appearance: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 2px solid var(--text-muted);
+      border-radius: 50%;
+      margin: 0;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .radio-option input[type="radio"]:checked {
+      border-color: var(--accent);
+    }
+
+    .radio-option input[type="radio"]:checked::after {
+      content: "";
+      position: absolute;
+      width: 0.75rem;
+      height: 0.75rem;
+      background: var(--accent);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .toggle-group {
+      margin-top: 1.5rem;
+    }
+
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .toggle span {
+      font-size: 0.9375rem;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--tag-bg);
+      transition: .2s;
+      border-radius: 34px;
+    }
+
+    .switch .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+
+    .switch input:checked + .slider {
+      background-color: var(--accent);
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .btn-group {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    .btn {
+      background-color: #4477ff;
+      color: white;
+      padding: 0.875rem 2rem;
+      border: none;
+      border-radius: 1rem;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      line-height: 1.5;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:hover {
+      background-color: #3366ee;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(68, 119, 255, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(68, 119, 255, 0.2);
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.1), transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+
+    .btn:hover::after {
+      transform: translateX(100%);
+    }
+
+    .btn.cancel {
+      background-color: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+    }
+
+    .btn.cancel:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn.cancel:active {
+      box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+    }
+
+    .btn.create {
+      background-color: #4477ff;
+    }
+
+    .btn.create:hover {
+      background-color: #3366ee;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="liveroom.html" class="back-btn">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Back to Rooms
+    </a>
+    <h1>Create a New Room</h1>
+    <div class="form-grid">
+      <div class="form-section">
+        <h2>Room Details</h2>
+        <label for="roomName">Room Name</label>
+        <input type="text" id="roomName" placeholder="Give your room a catchy name">
+        <label for="description">Description</label>
+        <textarea id="description" rows="4" placeholder="What will happen in this room? Provide details."></textarea>
+
+        <label>Tags (Select up to 5)</label>
+        <div class="tag-group">
+          <div class="tag">Books</div>
+          <div class="tag">Tech</div>
+          <div class="tag">Music</div>
+          <div class="tag">Mindfulness</div>
+          <div class="tag">Philosophy</div>
+          <div class="tag">Gaming</div>
+          <div class="tag">Art</div>
+          <div class="tag">Fitness</div>
+          <div class="tag">Cooking</div>
+          <div class="tag">Languages</div>
+          <div class="tag">Science</div>
+          <div class="tag">Business</div>
+          <div class="tag">Photography</div>
+          <div class="tag">Travel</div>
+          <div class="tag">Movies</div>
+          <div class="tag">Sports</div>
+          <div class="tag">Fashion</div>
+          <div class="tag">Education</div>
+          <div class="tag">Writing</div>
+          <div class="tag">Design</div>
+          <div class="tag">Finance</div>
+          <div class="tag">Health</div>
+          <div class="tag">Podcasting</div>
+          <div class="tag">Networking</div>
+          <div class="tag">Startups</div>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h2>Room Settings</h2>
+        <label>Max Participants</label>
+        <div class="range-container">
+          <input type="range" id="maxParticipants" min="2" max="50" value="10">
+          <span class="range-value" id="maxParticipantsValue">10</span>
+        </div>
+        <label>Duration</label>
+        <div class="range-container">
+          <input type="range" id="duration" min="15" max="240" step="15" value="60">
+          <span class="range-value" id="durationValue"><span class="time"></span></span>
+        </div>
+
+        <label>Privacy</label>
+        <div class="privacy-options">
+          <label class="radio-option">
+            <input type="radio" name="privacy" checked>
+            <span>Public</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="privacy">
+            <span>Private</span>
+          </label>
+        </div>
+
+        <div class="toggle-group">
+          <div class="toggle">
+            <span>Allow Microphone</span>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle">
+            <span>Allow Video</span>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle">
+            <span>Allow Screen Sharing</span>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn cancel">Cancel</button>
+          <button class="btn">Schedule Room</button>
+          <button class="btn create">Create Room</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>
+    // Handle back navigation
+    document.querySelector('.back-btn').addEventListener('click', function() {
+        window.location.href = 'liveroom.html';
+    });
+
+    // Handle cancel button
+    document.querySelector('.btn.cancel').addEventListener('click', function() {
+        window.location.href = 'liveroom.html';
+    });
+
+    // Handle tag selection
+    const tags = document.querySelectorAll('.tag');
+    let selectedTags = 0;
+
+    tags.forEach(tag => {
+        tag.addEventListener('click', function() {
+            if (!this.classList.contains('selected') && selectedTags < 5) {
+                this.classList.add('selected');
+                selectedTags++;
+            } else if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
+                selectedTags--;
+            }
+        });
+    });
+
+    // Format minutes to "Xh Xm" format side by side
+    function formatDuration(minutes) {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      if (hours === 0) {
+        return `<span class="time">${mins}m</span>`;
+      }
+      return `<span class="time">${hours}h ${mins}m</span>`;
+    }
+
+    // Handle range input updates
+    const maxParticipants = document.getElementById('maxParticipants');
+    const maxParticipantsValue = document.getElementById('maxParticipantsValue');
+    const duration = document.getElementById('duration');
+    const durationValue = document.getElementById('durationValue');
+
+    maxParticipants.addEventListener('input', function() {
+      maxParticipantsValue.textContent = this.value;
+    });
+
+    duration.addEventListener('input', function() {
+      durationValue.innerHTML = formatDuration(parseInt(this.value));
+    });
+
+    // Initialize duration display
+    durationValue.innerHTML = formatDuration(parseInt(duration.value));
+  </script>
+</body>
+</html>

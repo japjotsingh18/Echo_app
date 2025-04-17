@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo - Notifications</title>
+    <style>
+        :root {
+            --primary-color: #9c5af5;
+            --primary-gradient: linear-gradient(135deg, #9c5af5, #f059b5);
+            --dark-bg: #0a0a14;
+            --sidebar-bg: #10101d;
+            --card-bg: #1c1c2e;
+            --card-hover: #282844;
+            --text-color: #ffffff;
+            --text-secondary: #b0b0c0;
+            --border-color: #2a2a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            padding: 0 24px 24px;
+        }
+
+        .logo {
+            width: 32px;
+            margin-right: 12px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            color: var(--text-color);
+            text-decoration: none;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            background-color: rgba(156, 90, 245, 0.2);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+
+        .badge {
+            position: absolute;
+            background-color: #e94057;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            right: 24px;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 12px 24px;
+        }
+
+        .mode-switch {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            cursor: pointer;
+        }
+
+        .record-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 12px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .record-btn .icon {
+            margin-right: 8px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px 32px;
+        }
+
+        .search-container {
+            padding: 8px 0 24px;
+            position: relative;
+        }
+
+        .search-bar {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar input {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            width: 100%;
+            padding: 8px;
+            outline: none;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--card-hover);
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab {
+            background-color: transparent;
+            border: none;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .tab .count {
+            display: inline-block;
+            background-color: var(--card-bg);
+            border-radius: 4px;
+            padding: 0 8px;
+            margin-left: 8px;
+            font-size: 12px;
+        }
+
+        .tab.active .count {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .notification {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .notification:hover {
+            background-color: var(--card-hover);
+        }
+
+        .notification.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--primary-color);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 16px;
+            background-color: var(--primary-color);
+            overflow: hidden;
+        }
+
+        .avatar.circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .notification-text {
+            line-height: 1.5;
+        }
+
+        .notification-text strong {
+            font-weight: 600;
+        }
+
+        .notification-time {
+            color: var(--text-secondary);
+            font-size: 14px;
+            white-space: nowrap;
+            margin-left: 8px;
+        }
+
+        .notification-tag {
+            background-color: rgba(156, 90, 245, 0.2);
+            color: var(--primary-color);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .action-btn.secondary {
+            background: var(--card-hover);
+            color: var(--text-color);
+        }
+
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .profile-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-new {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <svg class="logo" viewBox="0 0 24 24" fill="white">
+                <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 8v8m6-8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="logo-text">Echo</span>
+        </div>
+        
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            Home
+        </a>
+        
+        <a href="#" class="nav-item active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+            Notifications
+            <span class="badge">2</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+            </svg>
+            Messages
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 15c0-1.66 1.34-3 3-3 .35 0 .69.07 1 .18V6h5v2h-3v7.03c-.02 1.64-1.35 2.97-3 2.97-1.66 0-3-1.34-3-3z"/>
+            </svg>
+            Voice Stories
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+            </svg>
+            Live Rooms
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+            </svg>
+            Emotion Filter
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+            </svg>
+            Saved
+        </a>
+        
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            Profile
+        </a>
+        
+        <div class="sidebar-footer">
+            <div class="mode-switch">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/>
+                </svg>
+                Light Mode
+            </div>
+            
+            <button class="record-btn">
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                </svg>
+                Record
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="search-container">
+            <div class="search-bar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#b0b0c0">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <input type="text" placeholder="Search Echo">
+            </div>
+            
+            <div class="profile-container">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                </svg>
+                <span class="badge">2</span>
+                <img src="/api/placeholder/32/32" alt="Profile" class="profile-pic">
+            </div>
+        </div>
+        
+        <div class="header">
+            <h1>Notifications</h1>
+            <div class="header-actions">
+                <button class="btn" id="markAllReadBtn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    Mark all read
+                </button>
+                <button class="btn" id="clearAllBtn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                    Clear all
+                </button>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="all">All <span class="count">8</span></button>
+            <button class="tab" data-tab="unread">Unread <span class="count">2</span></button>
+            <button class="tab" data-tab="mentions">Mentions</button>
+            <button class="tab" data-tab="follows">Follows</button>
+            <button class="tab" data-tab="reactions">Reactions</button>
+        </div>
+        
+        <div class="notification-list" id="notificationList">
+            <!-- Notification 1 - Mention -->
+            <div class="notification unread" data-type="mentions">
+                <img src="/api/placeholder/48/48" alt="Alex Johnson" class="avatar">
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <div class="notification-text">
+                            <strong>Alex Johnson</strong> mentioned you
+                        </div>
+                        <div class="notification-time">5m ago</div>
+                    </div>
+                    <div class="notification-text">
+                        Check out these new AI features @username
+                    </div>
+                </div>
+                <div class="status-indicator status-new">New</div>
+            </div>
+            
+            <!-- Notification 2 - Live Room -->
+            <div class="notification unread" data-type="mentions">
+                <div class="avatar circle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                    </svg>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <div class="notification-text">
+                            <strong>Live Room Invitation</strong>
+                        </div>
+                        <div class="notification-time">15m ago</div>
+                    </div>
+                    <div class="notification-text">
+                        Join the conversation about music production techniques
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" id="joinRoomBtn">Join Room</button>
+                        <button class="action-btn secondary" id="declineBtn">Decline</button>
+                    </div>
+                </div>
+                <div class="status-indicator status-new">New</div>
+            </div>
+            
+            <!-- Notification 3 - Follow -->
+            <div class="notification" data-type="follows">
+                <img src="/api/placeholder/48/48" alt="Sarah Chen" class="avatar">
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <div class="notification-text">
+                            <strong>Sarah Chen</strong> followed you
+                        </div>
+                        <div class="notification-time">1h ago</div>
+                    </div>
+                    <div class="notification-text">
+                        Sarah Chen started following you
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notification 4 - Reaction -->
+            <div class="notification" data-type="reactions">
+                <img src="/api/placeholder/48/48" alt="Elena Rodriguez" class="avatar">
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <div class="notification-text">
+                            <strong>Elena Rodriguez</strong> reacted to your story
+                        </div>
+                        <div class="notification-time">2h ago</div>
+                    </div>
+                    <div class="notification-text">
+                        Your voice story received an <span class="notification-tag">EXCITED</span> reaction
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Elements
+        const tabs = document.querySelectorAll('.tab');
+        const notifications = document.querySelectorAll('.notification');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const joinRoomBtn = document.getElementById('joinRoomBtn');
+        const declineBtn = document.getElementById('declineBtn');
+        const notificationList = document.getElementById('notificationList');
+        
+        // Initialize counters
+        let totalCount = notifications.length;
+        let unreadCount = document.querySelectorAll('.notification.unread').length;
+        updateCounts();
+        
+        // Tab filtering functionality
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active tab
+                document.querySelector('.tab.active').classList.remove('active');
+                tab.classList.add('active');
+                
+                const tabType = tab.dataset.tab;
+                
+                // Filter notifications
+                if (tabType === 'all') {
+                    notifications.forEach(notification => {
+                        notification.style.display = 'flex';
+                    });
+                } else {
+                    notifications.forEach(notification => {
+                        if (notification.dataset.type === tabType) {
+                            notification.style.display = 'flex';
+                        } else {
+                            notification.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Mark all as read
+        markAllReadBtn.addEventListener('click', () => {
+            notifications.forEach(notification => {
+                notification.classList.remove('unread');
+                const statusIndicator = notification.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.remove();
+                }
+            });
+            
+            unreadCount = 0;
+            updateCounts();
+            
+            // Update sidebar badge
+            const sidebarBadge = document.querySelector('.nav-item.active .badge');
+            if (sidebarBadge) {
+                sidebarBadge.style.display = 'none';
+            }
+            
+            // Show toast notification
+            showToast('All notifications marked as read');
+        });
+        
+        // Clear all notifications
+        clearAllBtn.addEventListener('click', () => {
+            notificationList.innerHTML = '';
+            totalCount = 0;
+            unreadCount = 0;
+            updateCounts();
+            
+            // Show empty state
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <div style="text-align: center; padding: 48px 0;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--text-secondary)" style="margin-bottom: 16px;">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                    </svg>
+                    <h3>No notifications</h3>
+                    <p style="color: var(--text-secondary); margin-top: 8px;">You're all caught up!</p>
+                </div>
+            `;
+            notificationList.appendChild(emptyState);
+            
+            // Update sidebar badge
+            const sidebarBadge = document.querySelector('.nav-item.active .badge');
+            if (sidebarBadge) {
+                sidebarBadge.style.display = 'none';
+            }
+            
+            // Show toast notification
+            showToast('All notifications cleared');
+        });
+        
+        // Individual notification click
+        notifications.forEach(notification => {
+            notification.addEventListener('click', (e) => {
+                // Don't trigger if clicking action buttons
+                if (e.target.closest('.action-buttons')) {
+                    return;
+                }
+                
+                if (notification.classList.contains('unread')) {
+                    notification.classList.remove('unread');
+                    const statusIndicator = notification.querySelector('.status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.remove();
+                    }
+                    
+                    unreadCount--;
+                    updateCounts();
+                    
+                    // Check if we need to update the sidebar badge
+                    if (unreadCount === 0) {
+                        const sidebarBadge = document.querySelector('.nav-item.active .badge');
+                        if (sidebarBadge) {
+                            sidebarBadge.style.display = 'none';
+                        }
+                    }
+                }
+                
+                // Show toast for demonstration
+                const notificationType = notification.querySelector('.notification-text strong').textContent;
+                showToast(Opening notification from ${notificationType});
+            });
+        });
+        
+        // Live room action buttons
+        joinRoomBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showToast('Joining live room...');
+            
+            // Remove the notification after action
+            setTimeout(() => {
+                const notification = joinRoomBtn.closest('.notification');
+                notification.remove();
+                totalCount--;
+                if (notification.classList.contains('unread')) {
+                    unreadCount--;
+                }
+                updateCounts();
+            }, 500);
+        });
+        
+        declineBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showToast('Invitation declined');
+            
+            // Remove the notification after action
+            setTimeout(() => {
+                const notification = declineBtn.closest('.notification');
+                notification.remove();
+                totalCount--;
+                if (notification.classList.contains('unread')) {
+                    unreadCount--;
+                }
+                updateCounts();
+            }, 500);
+        });

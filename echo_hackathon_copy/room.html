@@ -412,17 +412,6 @@
     .control-btn-wrapper:hover .tooltip {
       opacity: 1;
     }
-
-    .voice-pattern.active .material-symbols-outlined {
-      animation: pulse 1.5s infinite ease-in-out;
-      color: var(--accent);
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.6; transform: scale(0.95); }
-      50% { opacity: 1; transform: scale(1.05); }
-      100% { opacity: 0.6; transform: scale(0.95); }
-    }
   </style>
 </head>
 <body>
@@ -534,42 +523,10 @@
         muteBtn.innerHTML = '<span class="material-symbols-outlined">mic_off</span>';
         muteBtn.classList.remove('unmuted');
         tooltip.textContent = 'Unmute';
-        
-        // Update user's card to show muted state
-        updateUserCard(true);
       } else {
         muteBtn.innerHTML = '<span class="material-symbols-outlined">mic</span>';
         muteBtn.classList.add('unmuted');
         tooltip.textContent = 'Mute';
-        
-        // Update user's card to show voice pattern
-        updateUserCard(false);
-      }
-    }
-
-    // Function to update user's card display
-    function updateUserCard(muted) {
-      if (!userJoined) return;
-      
-      const userCard = Array.from(document.querySelectorAll('.participant-card')).find(card => 
-        card.querySelector('.participant-name').textContent === 'You'
-      );
-      
-      if (userCard) {
-        const voicePattern = userCard.querySelector('.voice-pattern');
-        if (muted) {
-          voicePattern.innerHTML = `
-            <span class="material-symbols-outlined">mic_off</span>
-            Muted
-          `;
-          voicePattern.classList.remove('active');
-        } else {
-          voicePattern.innerHTML = `
-            <span class="material-symbols-outlined">graphic_eq</span>
-            ${selectedEmotion.name} Voice Pattern
-          `;
-          voicePattern.classList.add('active');
-        }
       }
     }
 

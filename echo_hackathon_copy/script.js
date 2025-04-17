@@ -454,10 +454,21 @@ async function startRecording() {
     state.mediaRecorder.addEventListener('stop', () => {
       const audioBlob = new Blob(state.audioChunks, { type: 'audio/wav' });
       const audioUrl = URL.createObjectURL(audioBlob);
-      state.audioUrls.push(audioUrl);
+      state.audioUrls.push(audioUrl); // Store URL for cleanup
       
-      // Show the recording preview dialog instead of the simple audio preview
-      showRecordingPreview();
+      const audioPreview = document.createElement('audio');
+      audioPreview.src = audioUrl;
+      audioPreview.controls = true;
+      
+      const previewContainer = document.querySelector('.audio-preview') || document.createElement('div');
+      previewContainer.className = 'audio-preview';
+      previewContainer.innerHTML = '';
+      previewContainer.appendChild(audioPreview);
+      
+      const composer = document.querySelector('.voice-composer');
+      if (!document.querySelector('.audio-preview')) {
+        composer.insertBefore(previewContainer, composer.querySelector('.composer-footer'));
+      }
       
       document.getElementById('shareButton').disabled = false;
     });
@@ -470,10 +481,6 @@ async function startRecording() {
     alert('Unable to access microphone. Please check your permissions.');
   }
 }
-
-// Remove any existing audio preview elements
-const existingPreviews = document.querySelectorAll('.audio-preview');
-existingPreviews.forEach(preview => preview.remove());
 
 function stopRecording() {
   if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
@@ -1064,11 +1071,33 @@ function initDarkMode() {
   const toggleIcon = darkModeToggle.querySelector('.material-symbols-outlined');
   const toggleText = darkModeToggle.querySelector('.toggle-text');
   
-  // Always set dark mode as default
-  document.documentElement.setAttribute('data-theme', 'dark');
-  toggleIcon.textContent = 'light_mode';
-  toggleText.textContent = 'Light Mode';
-  localStorage.setItem('darkMode', 'true');
+  // Check if user has a saved preference
+  const isDarkMode = localStorage.getItem('darkMode') === 'true';
+  
+  // Apply saved preference if it exists
+  if (isDarkMode) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    toggleIcon.textContent = 'light_mode';
+    toggleText.textContent = 'Light Mode';
+  }
+  
+  // Toggle dark mode
+  darkModeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? null : 'dark';
+    
+    if (newTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      toggleIcon.textContent = 'light_mode';
+      toggleText.textContent = 'Light Mode';
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      toggleIcon.textContent = 'dark_mode';
+      toggleText.textContent = 'Dark Mode';
+      localStorage.setItem('darkMode', 'false');
+    }
+  });
 }
 
 // Initialize dark mode when the page loads
