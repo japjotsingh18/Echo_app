@@ -4,17 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Echo - Notifications</title>
+    <!-- Google Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="style.css" />
     <style>
         :root {
-            --primary-color: #9c5af5;
-            --primary-gradient: linear-gradient(135deg, #9c5af5, #f059b5);
-            --dark-bg: #0a0a14;
-            --sidebar-bg: #10101d;
-            --card-bg: #1c1c2e;
-            --card-hover: #282844;
-            --text-color: #ffffff;
-            --text-secondary: #b0b0c0;
-            --border-color: #2a2a3a;
+            --primary-color: #2F3336;
+            --primary-gradient: linear-gradient(135deg, #6B73FF, #000DFF);
+            --dark-bg: #000000;
+            --sidebar-bg: #15181C;
+            --card-bg: #1C1F23;
+            --card-hover: #2F3336;
+            --text-color: #E7E9EA;
+            --text-secondary: #71767B;
+            --border-color: #2F3336;
+            --accent-color: #1D9BF0;
+            --accent-hover: #1871CA;
+            --danger-color: #F4245E;
+            --success-color: #00BA7C;
         }
 
         * {
@@ -32,14 +39,25 @@
             overflow: hidden;
         }
 
+        /* Layout Structure */
+        .layout {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
         /* Sidebar */
-        .sidebar {
-            width: 260px;
+        .sidebar-left {
+            width: 300px;
+            min-width: 300px;
             background-color: var(--sidebar-bg);
             padding: 20px 0;
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--border-color);
+            height: 100vh;
         }
 
         .logo-container {
@@ -49,13 +67,65 @@
         }
 
         .logo {
-            width: 32px;
-            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-waveform {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 24px;
+        }
+
+        .waveform-bar {
+            width: 3px;
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transform-origin: bottom;
+            animation: waveform 1.2s ease-in-out infinite;
+        }
+
+        .waveform-bar:nth-child(1) { height: 40%; animation-delay: -1.1s; }
+        .waveform-bar:nth-child(2) { height: 60%; animation-delay: -1.0s; }
+        .waveform-bar:nth-child(3) { height: 80%; animation-delay: -0.9s; }
+        .waveform-bar:nth-child(4) { height: 100%; animation-delay: -0.8s; }
+        .waveform-bar:nth-child(5) { height: 80%; animation-delay: -0.7s; }
+        .waveform-bar:nth-child(6) { height: 60%; animation-delay: -0.6s; }
+        .waveform-bar:nth-child(7) { height: 40%; animation-delay: -0.5s; }
+
+        @keyframes waveform {
+            0%, 100% {
+                transform: scaleY(1);
+            }
+            50% {
+                transform: scaleY(0.5);
+            }
         }
 
         .logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .logo-echo {
             font-size: 24px;
             font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .logo-tagline {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            line-height: 1;
         }
 
         .nav-item {
@@ -66,6 +136,7 @@
             text-decoration: none;
             position: relative;
             font-weight: 500;
+            gap: 12px;
         }
 
         .nav-item:hover {
@@ -76,10 +147,8 @@
             background-color: rgba(156, 90, 245, 0.2);
         }
 
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
+        .nav-item .material-symbols-outlined {
+            font-size: 24px;
         }
 
         .badge {
@@ -95,57 +164,105 @@
             right: 24px;
         }
 
-        .sidebar-footer {
-            margin-top: auto;
-            padding: 12px 24px;
-        }
-
-        .mode-switch {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            cursor: pointer;
-        }
-
+        /* Record button styles */
         .record-btn {
             background: var(--primary-gradient);
             color: white;
             border: none;
             border-radius: 24px;
             padding: 12px;
-            width: 100%;
+            width: calc(100% - 48px);
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 16px;
+            margin: 16px 24px 0;
+            gap: 8px;
+            transition: opacity 0.2s;
         }
 
-        .record-btn .icon {
-            margin-right: 8px;
+        .record-btn:hover {
+            opacity: 0.9;
+        }
+
+        .record-btn .material-symbols-outlined {
+            font-size: 20px;
         }
 
         /* Main Content */
         .main-content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
+            max-width: calc(100vw - 300px);
+            height: 100vh;
             overflow-y: auto;
-            padding: 20px 32px;
+            border-right: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            padding: 0;
         }
 
         .search-container {
-            padding: 8px 0 24px;
-            position: relative;
+            position: sticky;
+            top: 0;
+            padding: 12px 16px;
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            position: sticky;
+            top: 64px;
+            z-index: 9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notifications-container {
+            padding: 0;
+        }
+
+        .notification-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: var(--card-hover);
+            cursor: pointer;
+        }
+
+        .notification-content {
+            flex: 1;
+            gap: 8px;
+        }
+
+        .tabs {
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            position: sticky;
+            top: 120px;
+            z-index: 8;
+            display: flex;
+            gap: 16px;
         }
 
         .search-bar {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: var(--card-bg);
             border-radius: 24px;
-            padding: 8px 16px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
+            border: 1px solid var(--border-color);
         }
 
         .search-bar input {
@@ -157,16 +274,19 @@
             outline: none;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+        .search-bar:focus-within {
+            background-color: var(--dark-bg);
+            border-color: var(--accent-color);
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-secondary);
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
+            color: var(--text-color);
         }
 
         .header-actions {
@@ -175,20 +295,22 @@
         }
 
         .btn {
-            background-color: var(--card-bg);
+            background-color: transparent;
             color: var(--text-color);
-            border: none;
-            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
             padding: 8px 16px;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: background-color 0.2s;
         }
 
         .btn:hover {
-            background-color: var(--card-hover);
+            background-color: rgba(239, 243, 244, 0.1);
         }
 
         .btn-icon {
@@ -196,39 +318,58 @@
             height: 18px;
         }
 
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
         .tab {
             background-color: transparent;
             border: none;
-            padding: 12px 16px;
+            padding: 16px 4px;
             color: var(--text-secondary);
             cursor: pointer;
             position: relative;
             font-weight: 500;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text-color);
         }
 
         .tab.active {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: var(--accent-color);
+            border-radius: 4px;
         }
 
         .tab .count {
-            display: inline-block;
-            background-color: var(--card-bg);
-            border-radius: 4px;
-            padding: 0 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--border-color);
+            color: var(--text-color);
+            border-radius: 16px;
+            padding: 2px 8px;
             margin-left: 8px;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            min-width: 20px;
+        }
+
+        .tab:hover .count {
+            background-color: rgba(239, 243, 244, 0.1);
         }
 
         .tab.active .count {
-            background-color: var(--primary-color);
+            background-color: var(--accent-color);
             color: white;
         }
 
@@ -240,6 +381,7 @@
 
         .notification {
             background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
             display: flex;
@@ -280,10 +422,6 @@
             font-weight: bold;
         }
 
-        .notification-content {
-            flex: 1;
-        }
-
         .notification-header {
             display: flex;
             justify-content: space-between;
@@ -306,8 +444,8 @@
         }
 
         .notification-tag {
-            background-color: rgba(156, 90, 245, 0.2);
-            color: var(--primary-color);
+            background-color: rgba(29, 155, 240, 0.1);
+            color: var(--accent-color);
             border-radius: 4px;
             padding: 2px 8px;
             font-size: 12px;
@@ -326,15 +464,26 @@
             background: var(--primary-gradient);
             color: white;
             border: none;
-            border-radius: 24px;
+            border-radius: 20px;
             padding: 8px 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
         }
 
         .action-btn.secondary {
-            background: var(--card-hover);
+            background: transparent;
+            border: 1px solid var(--border-color);
             color: var(--text-color);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(239, 243, 244, 0.1);
         }
 
         .profile-container {
@@ -357,101 +506,131 @@
             right: 16px;
             display: flex;
             align-items: center;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 186, 124, 0.1);
             border-radius: 16px;
             padding: 4px 10px;
             font-size: 12px;
             font-weight: 600;
+            color: var(--success-color);
         }
 
         .status-new {
             color: #4CAF50;
         }
+
+        /* Toast notification styles */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Logo styles */
+        .logo-waveform .waveform-bar {
+            background: var(--accent-color);
+        }
+
+        .logo-echo {
+            color: var(--accent-color);
+            background: var(--accent-color);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Active nav item */
+        .nav-item.active {
+            background-color: rgba(29, 155, 240, 0.1);
+        }
+
+        .nav-item:hover {
+            background-color: rgba(239, 243, 244, 0.1);
+        }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar-left">
         <div class="logo-container">
-            <svg class="logo" viewBox="0 0 24 24" fill="white">
-                <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M9 8v8m6-8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span class="logo-text">Echo</span>
+            <div class="logo">
+                <div class="logo-waveform">
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-echo">Echo</span>
+                    <span class="logo-tagline">EMOTIONS UNMUTED</span>
+                </div>
+            </div>
         </div>
         
-        <a href="#" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-            Home
+        <a href="index.html" class="nav-item">
+            <span class="material-symbols-outlined">home</span>
+            <span>Home</span>
         </a>
         
-        <a href="#" class="nav-item active">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-            </svg>
-            Notifications
+        <a href="notification.html" class="nav-item active">
+            <span class="material-symbols-outlined">notifications</span>
+            <span>Notifications</span>
             <span class="badge">2</span>
         </a>
         
-        <a href="#" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            </svg>
-            Messages
+        <a href="messages.html" class="nav-item">
+            <span class="material-symbols-outlined">mail</span>
+            <span>Messages</span>
+        </a>
+        
+        <a href="comingsoon_voicestories.html" class="nav-item">
+            <span class="material-symbols-outlined">auto_stories</span>
+            <span>Voice Stories</span>
+        </a>
+        
+        <a href="liveroom.html" class="nav-item">
+            <span class="material-symbols-outlined">campaign</span>
+            <span>Live Rooms</span>
+        </a>
+        
+        <a href="emotionfilter.html" class="nav-item">
+            <span class="material-symbols-outlined">mood</span>
+            <span>Emotion Filter</span>
         </a>
         
         <a href="#" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 15c0-1.66 1.34-3 3-3 .35 0 .69.07 1 .18V6h5v2h-3v7.03c-.02 1.64-1.35 2.97-3 2.97-1.66 0-3-1.34-3-3z"/>
-            </svg>
-            Voice Stories
+            <span class="material-symbols-outlined">bookmark</span>
+            <span>Saved</span>
         </a>
         
-        <a href="#" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-            </svg>
-            Live Rooms
+        <a href="#" class="nav-item" id="profileLink">
+            <span class="material-symbols-outlined">person</span>
+            <span>Profile</span>
         </a>
         
-        <a href="#" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-            </svg>
-            Emotion Filter
-        </a>
-        
-        <a href="#" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-            </svg>
-            Saved
-        </a>
-        
-        <a href="#" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-            Profile
-        </a>
-        
-        <div class="sidebar-footer">
-            <div class="mode-switch">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/>
-                </svg>
-                Light Mode
-            </div>
-            
-            <button class="record-btn">
-                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
-                </svg>
-                Record
-            </button>
-        </div>
+        <button class="record-btn">
+            <span class="material-symbols-outlined">mic</span>
+            Record Voice
+        </button>
     </div>
     
     <!-- Main Content -->
@@ -462,14 +641,6 @@
                     <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                 </svg>
                 <input type="text" placeholder="Search Echo">
-            </div>
-            
-            <div class="profile-container">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-                </svg>
-                <span class="badge">2</span>
-                <img src="/api/placeholder/32/32" alt="Profile" class="profile-pic">
             </div>
         </div>
         
@@ -499,9 +670,9 @@
             <button class="tab" data-tab="reactions">Reactions</button>
         </div>
         
-        <div class="notification-list" id="notificationList">
+        <div class="notifications-container" id="notificationList">
             <!-- Notification 1 - Mention -->
-            <div class="notification unread" data-type="mentions">
+            <div class="notification-item unread" data-type="mentions">
                 <img src="/api/placeholder/48/48" alt="Alex Johnson" class="avatar">
                 <div class="notification-content">
                     <div class="notification-header">
@@ -518,7 +689,7 @@
             </div>
             
             <!-- Notification 2 - Live Room -->
-            <div class="notification unread" data-type="mentions">
+            <div class="notification-item unread" data-type="mentions">
                 <div class="avatar circle">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
                         <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
@@ -543,7 +714,7 @@
             </div>
             
             <!-- Notification 3 - Follow -->
-            <div class="notification" data-type="follows">
+            <div class="notification-item" data-type="follows">
                 <img src="/api/placeholder/48/48" alt="Sarah Chen" class="avatar">
                 <div class="notification-content">
                     <div class="notification-header">
@@ -559,7 +730,7 @@
             </div>
             
             <!-- Notification 4 - Reaction -->
-            <div class="notification" data-type="reactions">
+            <div class="notification-item" data-type="reactions">
                 <img src="/api/placeholder/48/48" alt="Elena Rodriguez" class="avatar">
                 <div class="notification-content">
                     <div class="notification-header">
@@ -579,7 +750,7 @@
     <script>
         // Elements
         const tabs = document.querySelectorAll('.tab');
-        const notifications = document.querySelectorAll('.notification');
+        const notifications = document.querySelectorAll('.notification-item');
         const markAllReadBtn = document.getElementById('markAllReadBtn');
         const clearAllBtn = document.getElementById('clearAllBtn');
         const joinRoomBtn = document.getElementById('joinRoomBtn');
@@ -588,7 +759,7 @@
         
         // Initialize counters
         let totalCount = notifications.length;
-        let unreadCount = document.querySelectorAll('.notification.unread').length;
+        let unreadCount = document.querySelectorAll('.notification-item.unread').length;
         updateCounts();
         
         // Tab filtering functionality
@@ -674,7 +845,6 @@
         // Individual notification click
         notifications.forEach(notification => {
             notification.addEventListener('click', (e) => {
-                // Don't trigger if clicking action buttons
                 if (e.target.closest('.action-buttons')) {
                     return;
                 }
@@ -688,19 +858,10 @@
                     
                     unreadCount--;
                     updateCounts();
-                    
-                    // Check if we need to update the sidebar badge
-                    if (unreadCount === 0) {
-                        const sidebarBadge = document.querySelector('.nav-item.active .badge');
-                        if (sidebarBadge) {
-                            sidebarBadge.style.display = 'none';
-                        }
-                    }
                 }
                 
-                // Show toast for demonstration
                 const notificationType = notification.querySelector('.notification-text strong').textContent;
-                showToast(Opening notification from ${notificationType});
+                showToast(`Opening notification from ${notificationType}`);
             });
         });
         
@@ -711,7 +872,7 @@
             
             // Remove the notification after action
             setTimeout(() => {
-                const notification = joinRoomBtn.closest('.notification');
+                const notification = joinRoomBtn.closest('.notification-item');
                 notification.remove();
                 totalCount--;
                 if (notification.classList.contains('unread')) {
@@ -727,7 +888,7 @@
             
             // Remove the notification after action
             setTimeout(() => {
-                const notification = declineBtn.closest('.notification');
+                const notification = declineBtn.closest('.notification-item');
                 notification.remove();
                 totalCount--;
                 if (notification.classList.contains('unread')) {
@@ -736,3 +897,57 @@
                 updateCounts();
             }, 500);
         });
+
+        // Update counts function
+        function updateCounts() {
+            const allTab = document.querySelector('[data-tab="all"] .count');
+            const unreadTab = document.querySelector('[data-tab="unread"] .count');
+            
+            if (allTab) allTab.textContent = totalCount;
+            if (unreadTab) unreadTab.textContent = unreadCount;
+            
+            // Update sidebar badge
+            const sidebarBadge = document.querySelector('.nav-item.active .badge');
+            if (sidebarBadge) {
+                if (unreadCount > 0) {
+                    sidebarBadge.style.display = 'flex';
+                    sidebarBadge.textContent = unreadCount;
+                } else {
+                    sidebarBadge.style.display = 'none';
+                }
+            }
+        }
+
+        // Toast notification function
+        function showToast(message) {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <span class="material-symbols-outlined">info</span>
+                ${message}
+            `;
+            document.body.appendChild(toast);
+
+            // Trigger reflow
+            toast.offsetHeight;
+
+            // Show toast
+            toast.classList.add('show');
+
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize with dark mode
+        document.body.classList.add('dark-mode');
+    </script>
+</body>
+</html>
