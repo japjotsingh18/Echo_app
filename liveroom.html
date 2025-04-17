@@ -381,14 +381,20 @@
     .main-content {
       margin-left: 60px;
     }
+
+    .logo-container {
+      padding: 0 8px;
+      margin-bottom: 8px;
+      margin-left: -30px;
+    }
 </style>
 </head>
 <body>
     <div class="vertical-nav">
-        <a href="index.html" class="nav-icon active">
+        <a href="home.html" class="nav-icon active">
           <span class="material-symbols-outlined">home</span>
         </a>
-        <a href="index.html" class="nav-icon" onclick="localStorage.setItem('showProfile', 'true');">
+        <a href="home.html" class="nav-icon" onclick="localStorage.setItem('showProfile', 'true');">
           <span class="material-symbols-outlined">person</span>
         </a>
         <a href="messages.html" class="nav-item">
@@ -414,8 +420,16 @@
       
   <div class="main-content">
   <div class="sidebar">
-    <svg height="24" width="24" viewBox="0 0 24 24"><path d="M3 12l18-12v24z"/></svg>
-    <svg height="24" width="24" viewBox="0 0 24 24"><path d="M3 3h18v2H3zM3 10h18v2H3zM3 17h18v2H3z"/></svg>
+    <div class="logo-container">
+      <div class="logo">
+        <div class="logo-waveform">
+          <div class="waveform-bar" style="height: 16px;"></div>
+          <div class="waveform-bar" style="height: 24px;"></div>
+          <div class="waveform-bar" style="height: 16px;"></div>
+        </div>
+        <span style="font-weight: 600; font-size: 1.25rem;">Echo</span>
+      </div>
+    </div>
   </div>
   <main>
     <div class="header">

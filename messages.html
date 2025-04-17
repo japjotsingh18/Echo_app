@@ -460,6 +460,36 @@
     .tab {
       cursor: pointer;
     }
+
+    .logo-container {
+      padding: 0 8px;
+      margin-bottom: 8px;
+      margin-left: 23px;
+      margin-top: 23px;
+    }
+
+    .record-btn {
+      margin-top: 16px;
+      background: linear-gradient(135deg, #9333EA, #E11D48);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 9999px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
+    }
+
+    .record-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(147, 51, 234, 0.3);
+      background: linear-gradient(135deg, #8324db, #d01941);
+    }
   </style>
 </head>
 <body>
@@ -469,46 +499,39 @@
       <div class="logo-container">
         <div class="logo">
           <div class="logo-waveform">
-            <div class="waveform-bar"></div>
-            <div class="waveform-bar"></div>
-            <div class="waveform-bar"></div>
-            <div class="waveform-bar"></div>
-            <div class="waveform-bar"></div>
-            <div class="waveform-bar"></div>
-            <div class="waveform-bar"></div>
+            <div class="waveform-bar" style="height: 16px;"></div>
+            <div class="waveform-bar" style="height: 24px;"></div>
+            <div class="waveform-bar" style="height: 16px;"></div>
           </div>
-          <div class="logo-text">
-            <span class="logo-echo">Echo</span>
-            <span class="logo-tagline">EMOTIONS UNMUTED</span>
-          </div>
+          <span style="font-weight: 600; font-size: 1.25rem;">Echo</span>
         </div>
       </div>
       <div class="nav-links">
-        <a href="index.html" class="nav-link">
+        <a href="home.html" class="nav-link">
           <span class="material-symbols-outlined">home</span>
           <span>Home</span>
+        </a>
+        <a href="messages.html" class="nav-link active">
+          <span class="material-symbols-outlined">chat</span>
+          <span>Messages</span>
         </a>
         <a href="notification.html" class="nav-link">
           <span class="material-symbols-outlined">notifications</span>
           <span>Notifications</span>
         </a>
-        <a href="messages.html" class="nav-link active">
-          <span class="material-symbols-outlined">mail</span>
-          <span>Messages</span>
-        </a>
-        <a href="comingsoon_voicestories.html" class="nav-link">
-          <span class="material-symbols-outlined">auto_stories</span>
-          <span>Voice Stories</span>
-        </a>
         <a href="liveroom.html" class="nav-link">
-          <span class="material-symbols-outlined">campaign</span>
+          <span class="material-symbols-outlined">radio</span>
           <span>Live Rooms</span>
         </a>
+        <a href="comingsoon_voicestories.html" class="nav-link">
+          <span class="material-symbols-outlined">mic</span>
+          <span>Voice Stories</span>
+        </a>
         <a href="emotionfilter.html" class="nav-link">
-          <span class="material-symbols-outlined">mood</span>
+          <span class="material-symbols-outlined">filter_alt</span>
           <span>Emotion Filter</span>
         </a>
-        <a href="#" class="nav-link" id="profileLink">
+        <a href="profile.html" class="nav-link">
           <span class="material-symbols-outlined">person</span>
           <span>Profile</span>
         </a>
