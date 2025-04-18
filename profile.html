@@ -40,14 +40,37 @@
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--border-color);
+            transition: all 0.3s ease-in-out;
         }
 
         .logo-container {
-  padding: 0 8px;
-  margin-bottom: 8px;
-  margin-left: 23px;
-  margin-top: 23px;
-}
+          padding: 0 8px;
+          margin-bottom: 8px;
+          margin-left: 23px;
+          margin-top: 23px;
+          transition: all 0.3s ease;
+        }
+        
+        .logo-container:hover .waveform-bar {
+          animation: waveformAnimate 1s infinite alternate;
+        }
+        
+        .logo-container:hover {
+          transform: scale(1.05);
+        }
+        
+        @keyframes waveformAnimate {
+          0% { transform: scaleY(0.6); }
+          100% { transform: scaleY(1.2); }
+        }
+        
+        .waveform-bar:nth-child(1) { animation-delay: 0s; }
+        .waveform-bar:nth-child(2) { animation-delay: 0.2s; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.4s; }
+        .waveform-bar:nth-child(4) { height: 85%; animation-delay: 0.3s; }
+        .waveform-bar:nth-child(5) { height: 100%; animation-delay: 0.4s; }
+        .waveform-bar:nth-child(6) { height: 75%; animation-delay: 0.5s; }
+        .waveform-bar:nth-child(7) { height: 50%; animation-delay: 0.6s; }
 
         .logo {
       display: flex;
@@ -67,14 +90,6 @@
             border-radius: 2px;
             animation: waveform 1.5s ease-in-out infinite;
         }
-
-        .waveform-bar:nth-child(1) { height: 50%; animation-delay: 0s; }
-        .waveform-bar:nth-child(2) { height: 75%; animation-delay: 0.1s; }
-        .waveform-bar:nth-child(3) { height: 100%; animation-delay: 0.2s; }
-        .waveform-bar:nth-child(4) { height: 85%; animation-delay: 0.3s; }
-        .waveform-bar:nth-child(5) { height: 100%; animation-delay: 0.4s; }
-        .waveform-bar:nth-child(6) { height: 75%; animation-delay: 0.5s; }
-        .waveform-bar:nth-child(7) { height: 50%; animation-delay: 0.6s; }
 
         @keyframes waveform {
             0%, 100% { transform: scaleY(1); }
@@ -105,6 +120,7 @@
             flex-direction: column;
             gap: 8px;
             padding: 0 24px;
+            margin-top: 20px;
         }
 
         .nav-link {
@@ -114,18 +130,67 @@
             padding: 12px;
             color: var(--text-secondary);
             text-decoration: none;
-      border-radius: 8px;
-            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 12px;
+            z-index: 1;
+        }
+        
+        .nav-link::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+          transition: all 0.6s ease;
+          z-index: -1;
         }
 
         .nav-link:hover {
-            background: var(--bg-secondary);
+            transform: translateX(8px);
+            background-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
             color: var(--text-primary);
         }
-
+        
+        .nav-link:hover::before {
+          left: 100%;
+        }
+        
+        .nav-link:hover .material-symbols-outlined {
+          transform: scale(1.2) rotate(5deg);
+          background: linear-gradient(135deg, #7C3AED, #E11D48);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0 0 2px rgba(124, 58, 237, 0.3));
+        }
+        
+        .nav-link:hover span:not(.material-symbols-outlined) {
+          font-weight: 600;
+          letter-spacing: 0.3px;
+          transform: translateX(4px);
+        }
+        
+        .nav-link span:not(.material-symbols-outlined) {
+          transition: all 0.3s ease;
+        }
+        
         .nav-link.active {
-            background: var(--bg-secondary);
-            color: var(--accent-color);
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.1), transparent);
+            border-left: 3px solid #7C3AED;
+            color: var(--text-primary);
+        }
+        
+        .nav-link.active:hover {
+          transform: translateX(6px) scale(1.01);
+          box-shadow: 0 6px 20px rgba(124, 58, 237, 0.25);
+        }
+
+        .nav-link .material-symbols-outlined {
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .nav-link span:first-child {
@@ -147,17 +212,50 @@
             font-size: 17px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            overflow: hidden;
+      position: relative;
+            z-index: 1;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
         }
+        
+        .record-btn::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+          opacity: 0;
+          transform: scale(0.5);
+          z-index: -1;
+          transition: opacity 0.6s ease, transform 0.6s ease;
+        }
 
         .record-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(147, 51, 234, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.3);
             background: linear-gradient(135deg, #8324db, #d01941);
+        }
+        
+        .record-btn:hover::after {
+          opacity: 1;
+          transform: scale(1);
+        }
+        
+        .record-btn:hover .material-symbols-outlined {
+          animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
         }
 
         .main-content {

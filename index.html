@@ -15,6 +15,8 @@
             --text-secondary: #9CA3AF;
             --background: #121212;
             --card-bg: rgba(31, 41, 55, 0.7);
+            --neon-purple: #b026ff;
+            --neon-blue: #4d79ff;
         }
 
         * {
@@ -30,6 +32,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            perspective: 1000px;
         }
 
         .navbar {
@@ -46,26 +49,92 @@
             z-index: 100;
         }
 
+        .logo-container {
+            padding: 0;
+            margin: 0;
+            position: relative;
+        }
+        
+        .logo-container:hover .waveform-bar {
+            animation: none;
+            height: 24px !important;
+            box-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-purple);
+        }
+        
+        .logo-container:hover .waveform-bar:nth-child(1) {
+            animation: neonPulse 1.5s infinite alternate 0.2s;
+        }
+        
+        .logo-container:hover .waveform-bar:nth-child(2) {
+            animation: neonPulse 1.5s infinite alternate 0.4s;
+        }
+        
+        .logo-container:hover .waveform-bar:nth-child(3) {
+            animation: neonPulse 1.5s infinite alternate 0.6s;
+        }
+        
+        @keyframes neonPulse {
+            0% {
+                height: 10px;
+                background: var(--neon-purple);
+            }
+            50% {
+                height: 30px;
+                background: var(--neon-blue);
+            }
+            100% {
+                height: 20px;
+                background: var(--neon-purple);
+            }
+        }
+
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 12px;
             text-decoration: none;
             color: var(--text-primary);
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .logo-container:hover .logo {
+            transform: rotateY(20deg);
         }
 
         .logo-waveform {
             display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 24px;
+            align-items: center;
+            gap: 4px;
+            height: auto;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .logo-container:hover .logo-waveform {
+            transform: translateZ(20px);
         }
 
         .waveform-bar {
             width: 3px;
-            background: linear-gradient(180deg, var(--primary-color), #9F7AEA);
+            height: 16px;
+            background: white;
             border-radius: 2px;
-            transition: height 0.3s ease;
+            transition: all 0.3s ease;
+        }
+        
+        .logo-container:hover span {
+            text-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-purple);
+            animation: textFlicker 2s infinite alternate;
+        }
+        
+        @keyframes textFlicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-purple);
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
         }
 
         .nav-buttons {
@@ -79,30 +148,85 @@
             border-radius: 9999px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
             text-decoration: none;
             border: none;
             font-size: 0.875rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all 0.4s ease;
         }
 
         .btn-login {
             background: transparent;
             color: var(--text-primary);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
         }
-
+        
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s ease;
+            z-index: -1;
+        }
+        
         .btn-login:hover {
-            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            letter-spacing: 1px;
+        }
+        
+        .btn-login:hover::before {
+            left: 100%;
         }
 
         .btn-signup {
             background: var(--primary-color);
             color: white;
+            overflow: hidden;
         }
-
+        
+        .btn-signup::before,
+        .btn-signup::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.2;
+            transition: all 0.8s ease;
+            z-index: -1;
+        }
+        
+        .btn-signup::before {
+            top: -10px;
+            left: -10px;
+        }
+        
+        .btn-signup::after {
+            bottom: -10px;
+            right: -10px;
+        }
+        
         .btn-signup:hover {
             background: var(--primary-hover);
-            transform: translateY(-1px);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--primary-color);
+        }
+        
+        .btn-signup:hover::before,
+        .btn-signup:hover::after {
+            width: 300px;
+            height: 300px;
+            opacity: 0;
         }
 
         .hero {
@@ -138,6 +262,7 @@
             margin-top: 2rem;
             flex-wrap: wrap;
             padding: 0 2rem;
+            perspective: 1000px;
         }
 
         .feature-card {
@@ -147,11 +272,35 @@
             width: 300px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
-            transition: transform 0.3s ease;
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            position: relative;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            border-radius: 1rem;
+            z-index: -1;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: scale(1.1) translateY(-10px);
+            border: 1px solid var(--neon-purple);
+            box-shadow: 0 0 30px rgba(176, 38, 255, 0.5);
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .feature-card:hover::before {
+            opacity: 1;
         }
 
         .feature-icon {
@@ -163,16 +312,43 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 1rem;
+            transition: all 0.5s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: translateZ(30px) rotateZ(360deg);
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+            box-shadow: 0 0 15px rgba(176, 38, 255, 0.5);
+        }
+        
+        .feature-card:hover .material-symbols-outlined {
+            transform: scale(1.2);
         }
 
         .feature-card h3 {
             font-size: 1.25rem;
             margin-bottom: 0.5rem;
+            transition: all 0.5s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .feature-card:hover h3 {
+            transform: translateZ(20px);
+            color: white;
+            text-shadow: 0 0 5px var(--neon-purple);
         }
 
         .feature-card p {
             color: var(--text-secondary);
             line-height: 1.6;
+            transition: all 0.5s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .feature-card:hover p {
+            transform: translateZ(10px);
+            color: var(--text-primary);
         }
 
         .cta {
@@ -186,13 +362,41 @@
             color: white;
             font-size: 1.125rem;
             padding: 1rem 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
         }
-
+        
+        .btn-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--neon-purple), var(--primary-color));
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: -1;
+            border-radius: 9999px;
+        }
+        
         .btn-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--primary-color), 0 0 40px rgba(124, 58, 237, 0.4);
+            letter-spacing: 1px;
+        }
+        
+        .btn-cta:hover::before {
+            opacity: 1;
         }
 
+        @keyframes float {
+            0% { transform: translateY(0px) rotateY(0deg) rotateX(0deg); }
+            50% { transform: translateY(-20px) rotateY(10deg) rotateX(5deg); }
+            100% { transform: translateY(0px) rotateY(0deg) rotateX(0deg); }
+        }
+        
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2.5rem;
@@ -212,17 +416,19 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="#" class="logo">
-            <div class="logo-waveform">
-                <div class="waveform-bar" style="height: 16px;"></div>
-                <div class="waveform-bar" style="height: 24px;"></div>
-                <div class="waveform-bar" style="height: 16px;"></div>
-            </div>
-            <span style="font-weight: 600; font-size: 1.25rem;">Echo</span>
-        </a>
+        <div class="logo-container" style="padding: 0; margin: 0;">
+            <a href="#" class="logo" style="display: flex; align-items: center; gap: 12px;">
+                <div class="logo-waveform" style="display: flex; align-items: center; gap: 4px; height: auto;">
+                    <div class="waveform-bar" style="width: 3px; height: 16px; background: white; border-radius: 2px;"></div>
+                    <div class="waveform-bar" style="width: 3px; height: 24px; background: white; border-radius: 2px;"></div>
+                    <div class="waveform-bar" style="width: 3px; height: 16px; background: white; border-radius: 2px;"></div>
+                </div>
+                <span style="font-weight: 600; font-size: 1.25rem; color: white; margin-left: 4px;">Echo</span>
+            </a>
+        </div>
         <div class="nav-buttons">
-            <a href="home.html" class="btn btn-login">Log in</a>
-            <a href="home.html" class="btn btn-signup">Sign up</a>
+            <a href="home.html" class="btn btn-login">Login</a>
+            <a href="home.html" class="btn btn-signup">Sign Up Free</a>
         </div>
     </nav>
 
