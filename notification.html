@@ -36,7 +36,7 @@
 
         /* Layout */
         .layout {
-            display: flex;
+      display: flex;
             width: 100%;
             max-width: 1280px;
             margin: 0 auto;
@@ -58,6 +58,7 @@
             position: sticky;
             top: 0;
             gap: 32px;
+            transition: all 0.3s ease-in-out;
     }
     
         /* Logo */
@@ -66,6 +67,7 @@
             margin-bottom: 8px;
             margin-left: 23px;
             margin-top: 23px;
+            transition: all 0.3s ease;
     }
     
     .logo {
@@ -142,27 +144,71 @@
             border-radius: 12px;
             font-weight: 500;
             gap: 16px;
-            transition: all 0.2s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-size: 18px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.6s ease;
+            z-index: -1;
         }
 
         .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(8px);
+            background-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover .material-symbols-outlined {
+            transform: scale(1.2) rotate(5deg);
+            background: linear-gradient(135deg, #7C3AED, #E11D48);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 2px rgba(124, 58, 237, 0.3));
+        }
+
+        .nav-link:hover span:not(.material-symbols-outlined):not(.badge) {
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transform: translateX(4px);
+        }
+
+        .nav-link span:not(.material-symbols-outlined):not(.badge) {
+            transition: all 0.3s ease;
         }
 
         .nav-link.active {
-            background-color: #1A1D21;
-            color: var(--accent-color);
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.1), transparent);
+            border-left: 3px solid #7C3AED;
+        }
+
+        .nav-link.active:hover {
+            transform: translateX(6px) scale(1.01);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.25);
         }
 
         .nav-link .material-symbols-outlined {
-            font-size: 24px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         /* Badge */
         .badge {
             background-color: #E94057;
-            color: white;
+      color: white;
             padding: 4px 8px;
             border-radius: 16px;
             font-size: 14px;
@@ -180,23 +226,70 @@
             width: 100%;
             font-size: 16px;
             font-weight: 600;
-            cursor: pointer;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
             gap: 8px;
-            transition: all 0.2s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             margin-top: auto;
+            overflow: hidden;
+      position: relative;
+            z-index: 1;
+        }
+
+        .record-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            opacity: 0;
+            transform: scale(0.5);
+            z-index: -1;
+            transition: opacity 0.6s ease, transform 0.6s ease;
         }
 
         .record-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.3);
+            background: linear-gradient(135deg, #9333EA, #E11D48);
         }
 
-        .record-btn .material-symbols-outlined {
-            font-size: 20px;
+        .record-btn:hover::after {
+            opacity: 1;
+            transform: scale(1);
         }
+
+        .record-btn:hover .material-symbols-outlined {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Logo Container hover effects */
+        .logo-container:hover .waveform-bar {
+            animation: waveformAnimate 1s infinite alternate;
+        }
+
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes waveformAnimate {
+            0% { transform: scaleY(0.6); }
+            100% { transform: scaleY(1.2); }
+        }
+
+        .waveform-bar:nth-child(1) { animation-delay: 0s; }
+        .waveform-bar:nth-child(2) { animation-delay: 0.2s; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.4s; }
 
         /* Main Content */
         .main-content {
@@ -227,13 +320,13 @@
             z-index: 9;
       display: flex;
             justify-content: space-between;
-            align-items: center;
-        }
-
+      align-items: center;
+    }
+    
         .notifications-container {
             padding: 0;
-        }
-
+    }
+    
         .notification-item {
             padding: 16px;
             border-bottom: 1px solid var(--border-color);
@@ -245,10 +338,10 @@
         .notification-item:hover {
             background-color: var(--bg-secondary);
       cursor: pointer;
-        }
-
+    }
+    
         .notification-content {
-            flex: 1;
+      flex: 1;
             gap: 8px;
         }
 
@@ -259,7 +352,7 @@
             position: sticky;
             top: 120px;
             z-index: 8;
-            display: flex;
+      display: flex;
             gap: 16px;
         }
 
@@ -307,7 +400,7 @@
             border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 8px 16px;
-            font-size: 14px;
+      font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -327,7 +420,7 @@
 
         .tab {
             background-color: transparent;
-            border: none;
+      border: none;
             padding: 16px 4px;
             color: var(--text-secondary);
             cursor: pointer;
@@ -377,7 +470,7 @@
 
         .tab.active .count {
             background-color: var(--accent-color);
-            color: white;
+      color: white;
         }
 
         .notification-list {
@@ -392,7 +485,7 @@
             border-radius: 12px;
             padding: 16px;
       display: flex;
-            cursor: pointer;
+      cursor: pointer;
             transition: background-color 0.2s;
             position: relative;
         }
@@ -423,9 +516,9 @@
         }
 
         .avatar.circle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
             font-weight: bold;
         }
 
@@ -459,9 +552,9 @@
             font-weight: 600;
             margin-top: 8px;
             display: inline-block;
-        }
-
-        .action-buttons {
+    }
+    
+    .action-buttons {
       display: flex;
             gap: 8px;
             margin-top: 12px;
@@ -470,12 +563,12 @@
         .action-btn {
             background: var(--accent-color);
             color: white;
-            border: none;
+      border: none;
       border-radius: 20px;
             padding: 8px 16px;
             font-size: 14px;
             font-weight: 600;
-            cursor: pointer;
+      cursor: pointer;
             transition: opacity 0.2s;
         }
 
@@ -581,10 +674,10 @@
                         <div class="waveform-bar" style="height: 16px;"></div>
                         <div class="waveform-bar" style="height: 24px;"></div>
                         <div class="waveform-bar" style="height: 16px;"></div>
-                    </div>
-                    <span style="font-weight: 600; font-size: 1.25rem;">Echo</span>
       </div>
+                    <span style="font-weight: 600; font-size: 1.25rem;">Echo</span>
     </div>
+      </div>
     
             <div class="nav-links">
                 <a href="home.html" class="nav-link">
@@ -620,9 +713,9 @@
                     <span class="material-symbols-outlined">mic</span>
                     Record
                 </button>
-            </div>
+  </div>
         </nav>
-        
+  
         <!-- Main Content -->
   <div class="main-content">
             <div class="search-container">
@@ -632,15 +725,15 @@
         </svg>
         <input type="text" placeholder="Search Echo">
       </div>
-            </div>
-            
+      </div>
+      
             <div class="header">
                 <h1>Notifications</h1>
                 <div class="header-actions">
                     <button class="btn" id="markAllReadBtn">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
+          </svg>
                         Mark all read
               </button>
                     <button class="btn" id="clearAllBtn">
@@ -649,17 +742,17 @@
                 </svg>
                         Clear all
               </button>
-            </div>
-          </div>
-          
+      </div>
+    </div>
+    
             <div class="tabs">
                 <button class="tab active" data-tab="all">All <span class="count">8</span></button>
                 <button class="tab" data-tab="unread">Unread <span class="count">2</span></button>
                 <button class="tab" data-tab="mentions">Mentions</button>
                 <button class="tab" data-tab="follows">Follows</button>
                 <button class="tab" data-tab="reactions">Reactions</button>
-            </div>
-            
+        </div>
+        
             <div class="notifications-container" id="notificationList">
                 <!-- Notification 1 - Mention -->
                 <div class="notification-item unread" data-type="mentions">
@@ -668,41 +761,41 @@
                         <div class="notification-header">
                             <div class="notification-text">
                                 <strong>Alex Johnson</strong> mentioned you
-                            </div>
+        </div>
                             <div class="notification-time">5m ago</div>
-              </div>
+          </div>
                         <div class="notification-text">
                             Check out these new AI features @username
-              </div>
-            </div>
-            
-                </div>
-                
+          </div>
+        </div>
+        
+        </div>
+        
                 <!-- Notification 2 - Live Room -->
                 <div class="notification-item unread" data-type="mentions">
                     <div class="avatar circle">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
                             <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
                         </svg>
-                    </div>
+          </div>
                     <div class="notification-content">
                         <div class="notification-header">
                             <div class="notification-text">
                                 <strong>Live Room Invitation</strong>
-                            </div>
+          </div>
                             <div class="notification-time">15m ago</div>
-                        </div>
+        </div>
                         <div class="notification-text">
                             Join the conversation about music production techniques
-              </div>
+          </div>
                         <div class="action-buttons">
                             <button class="action-btn" id="joinRoomBtn">Join Room</button>
                             <button class="action-btn secondary" id="declineBtn">Decline</button>
-              </div>
-            </div>
-            
-            </div>
-            
+        </div>
+      </div>
+      
+        </div>
+        
                 <!-- Notification 3 - Follow -->
                 <div class="notification-item" data-type="follows">
                     <img src="/api/placeholder/48/48" alt="Sarah Chen" class="avatar">
@@ -710,15 +803,15 @@
                         <div class="notification-header">
                             <div class="notification-text">
                                 <strong>Sarah Chen</strong> followed you
-                            </div>
+            </div>
                             <div class="notification-time">1h ago</div>
-              </div>
+            </div>
                         <div class="notification-text">
                             Sarah Chen started following you
+          </div>
               </div>
             </div>
-          </div>
-          
+            
                 <!-- Notification 4 - Reaction -->
                 <div class="notification-item" data-type="reactions">
                     <img src="/api/placeholder/48/48" alt="Elena Rodriguez" class="avatar">
@@ -726,18 +819,18 @@
                         <div class="notification-header">
                             <div class="notification-text">
                                 <strong>Elena Rodriguez</strong> reacted to your story
-                            </div>
+              </div>
                             <div class="notification-time">2h ago</div>
-                        </div>
+              </div>
                         <div class="notification-text">
                             Your voice story received an <span class="notification-tag">EXCITED</span> reaction
-                        </div>
-                    </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
+            </div>
+              </div>
+              </div>
+            </div>
+              </div>
+            </div>
+            
     <script>
         // Elements
         const tabs = document.querySelectorAll('.tab');

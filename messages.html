@@ -9,6 +9,135 @@
   <!-- Google Material Icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <style>
+    /* Enhanced sidebar hover effects */
+    .sidebar-left {
+      transition: all 0.3s ease-in-out;
+    }
+    
+    .nav-link {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border-radius: 12px;
+      z-index: 1;
+    }
+    
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: all 0.6s ease;
+      z-index: -1;
+    }
+    
+    .nav-link:hover {
+      transform: translateX(8px);
+      background-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+    }
+    
+    .nav-link:hover::before {
+      left: 100%;
+    }
+    
+    .nav-link:hover .material-symbols-outlined {
+      transform: scale(1.2) rotate(5deg);
+      background: linear-gradient(135deg, #7C3AED, #E11D48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 2px rgba(124, 58, 237, 0.3));
+    }
+    
+    .nav-link:hover span:not(.material-symbols-outlined) {
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transform: translateX(4px);
+    }
+    
+    .nav-link span:not(.material-symbols-outlined) {
+      transition: all 0.3s ease;
+    }
+    
+    .nav-link.active {
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.1), transparent);
+      border-left: 3px solid #7C3AED;
+    }
+    
+    .nav-link.active:hover {
+      transform: translateX(6px) scale(1.01);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.25);
+    }
+    
+    .nav-link .material-symbols-outlined {
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .record-btn {
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .record-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+      opacity: 0;
+      transform: scale(0.5);
+      z-index: -1;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    
+    .record-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.3);
+    }
+    
+    .record-btn:hover::after {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .record-btn:hover .material-symbols-outlined {
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    .logo-container {
+      transition: all 0.3s ease;
+    }
+    
+    .logo-container:hover .waveform-bar {
+      animation: waveformAnimate 1s infinite alternate;
+    }
+    
+    .logo-container:hover {
+      transform: scale(1.05);
+    }
+    
+    @keyframes waveformAnimate {
+      0% { transform: scaleY(0.6); }
+      100% { transform: scaleY(1.2); }
+    }
+    
+    .waveform-bar:nth-child(1) { animation-delay: 0s; }
+    .waveform-bar:nth-child(2) { animation-delay: 0.2s; }
+    .waveform-bar:nth-child(3) { animation-delay: 0.4s; }
+
     .layout {
       display: flex;
       min-height: 100vh;

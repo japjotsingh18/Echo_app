@@ -8,6 +8,154 @@
   <link rel="stylesheet" href="style.css" />
   <!-- Google Material Icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    /* Enhanced sidebar hover effects */
+    .sidebar-left {
+      transition: all 0.3s ease-in-out;
+    }
+    
+    .nav-link {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border-radius: 12px;
+      z-index: 1;
+    }
+    
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: all 0.6s ease;
+      z-index: -1;
+    }
+    
+    .nav-link:hover {
+      transform: translateX(8px);
+      background-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+    }
+    
+    .nav-link:hover::before {
+      left: 100%;
+    }
+    
+    .nav-link:hover .material-symbols-outlined {
+      transform: scale(1.2) rotate(5deg);
+      background: linear-gradient(135deg, #7C3AED, #E11D48);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 2px rgba(124, 58, 237, 0.3));
+    }
+    
+    .nav-link:hover span:not(.material-symbols-outlined) {
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transform: translateX(4px);
+    }
+    
+    .nav-link span:not(.material-symbols-outlined) {
+      transition: all 0.3s ease;
+    }
+    
+    .nav-link.active {
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.1), transparent);
+      border-left: 3px solid #7C3AED;
+    }
+    
+    .nav-link.active:hover {
+      transform: translateX(6px) scale(1.01);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.25);
+    }
+    
+    .nav-link .material-symbols-outlined {
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .record-btn {
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: linear-gradient(135deg, #9333EA, #E11D48);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 9999px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
+      margin-top: 16px;
+    }
+    
+    .record-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+      opacity: 0;
+      transform: scale(0.5);
+      z-index: -1;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    
+    .record-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.3);
+      background: linear-gradient(135deg, #9333EA, #E11D48);
+    }
+    
+    .record-btn:hover::after {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .record-btn:hover .material-symbols-outlined {
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    .logo-container {
+      padding: 0 8px;
+      margin-bottom: 8px;
+      margin-left: 23px;
+      margin-top: 23px;
+      transition: all 0.3s ease;
+    }
+    
+    .logo-container:hover .waveform-bar {
+      animation: waveformAnimate 1s infinite alternate;
+    }
+    
+    .logo-container:hover {
+      transform: scale(1.05);
+    }
+    
+    @keyframes waveformAnimate {
+      0% { transform: scaleY(0.6); }
+      100% { transform: scaleY(1.2); }
+    }
+    
+    .waveform-bar:nth-child(1) { animation-delay: 0s; }
+    .waveform-bar:nth-child(2) { animation-delay: 0.2s; }
+    .waveform-bar:nth-child(3) { animation-delay: 0.4s; }
+  </style>
 </head>
 <body>
   <div class="layout">
@@ -650,380 +798,5 @@
       setTimeout(detectEmotion, 500); // Add slight delay to simulate processing
     });
   </script>
-
-  <style>
-    .record-btn {
-      margin-top: 16px;
-      background: linear-gradient(135deg, #9333EA, #E11D48);
-      color: white;
-      border: none;
-      padding: 16px 32px;
-      border-radius: 9999px;
-      font-size: 17px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
-    }
-
-    .record-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(147, 51, 234, 0.3);
-      background: linear-gradient(135deg, #8324db, #d01941);
-    }
-
-    .live-room-banner {
-      cursor: pointer;
-      transition: transform 0.2s ease;
-      color: white !important;
-    }
-    
-    .live-room-banner:hover {
-      transform: translateY(-2px);
-    }
-
-    .live-room-banner .live-room-title,
-    .live-room-banner .live-room-description,
-    .live-room-banner .live-room-stats,
-    .live-room-banner .material-symbols-outlined {
-      color: white !important;
-    }
-
-    .live-room-banner .stat {
-      color: rgba(255, 255, 255, 0.9) !important;
-    }
-
-    .join-room-btn .material-symbols-outlined {
-      color: #9333EA !important;
-    }
-
-    .live-room-description {
-      min-height: 40px;
-      position: relative;
-      margin-bottom: 8px;
-    }
-
-    .live-room-stats {
-      margin-top: 0;
-      padding-top: 0;
-    }
-
-    .stat {
-      margin: 4px 0;
-    }
-
-    .live-room-title {
-      margin-bottom: 8px;
-    }
-
-    .live-room-banner {
-      padding: 24px;
-    }
-
-    .animated-text {
-      position: absolute;
-      left: 0;
-      opacity: 0;
-      transform: translateY(10px);
-      animation-duration: 12s;
-      animation-iteration-count: infinite;
-      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .text1 { animation-name: fadeInOut1; }
-    .text2 { animation-name: fadeInOut2; }
-    .text3 { animation-name: fadeInOut3; }
-    .text4 { animation-name: fadeInOut4; }
-
-    @keyframes fadeInOut1 {
-      0%, 100% { opacity: 0; transform: translateY(10px); }
-      2% { opacity: 0; transform: translateY(10px); }
-      4% { opacity: 1; transform: translateY(0); }
-      22% { opacity: 1; transform: translateY(0); }
-      24% { opacity: 0; transform: translateY(-10px); }
-      25%, 98% { opacity: 0; }
-    }
-
-    @keyframes fadeInOut2 {
-      0%, 25% { opacity: 0; transform: translateY(10px); }
-      27% { opacity: 0; transform: translateY(10px); }
-      29% { opacity: 1; transform: translateY(0); }
-      47% { opacity: 1; transform: translateY(0); }
-      49% { opacity: 0; transform: translateY(-10px); }
-      50%, 98% { opacity: 0; }
-    }
-
-    @keyframes fadeInOut3 {
-      0%, 50% { opacity: 0; transform: translateY(10px); }
-      52% { opacity: 0; transform: translateY(10px); }
-      54% { opacity: 1; transform: translateY(0); }
-      72% { opacity: 1; transform: translateY(0); }
-      74% { opacity: 0; transform: translateY(-10px); }
-      75%, 98% { opacity: 0; }
-    }
-
-    @keyframes fadeInOut4 {
-      0%, 75% { opacity: 0; transform: translateY(10px); }
-      77% { opacity: 0; transform: translateY(10px); }
-      79% { opacity: 1; transform: translateY(0); }
-      97% { opacity: 1; transform: translateY(0); }
-      99% { opacity: 0; transform: translateY(-10px); }
-      100% { opacity: 0; }
-    }
-
-    .voice-composer {
-      background: white;
-      border-radius: 16px;
-      padding: 16px;
-      margin: 16px 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .composer-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .button-container {
-      flex-grow: 1;
-    }
-
-    .record-voice-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #f0f2f5;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 9999px;
-      font-size: 16px;
-      color: #65676b;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      width: auto;
-    }
-
-    .record-voice-btn:hover {
-      background: #e4e6eb;
-    }
-
-    #stopButton {
-      background: #dc2626;
-      color: white;
-    }
-
-    #stopButton:hover {
-      background: #b91c1c;
-    }
-
-    #playButton {
-      background: #2563eb;
-      color: white;
-    }
-
-    #playButton:hover {
-      background: #1d4ed8;
-    }
-
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      flex-shrink: 0;
-    }
-
-    .preview-dialog {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .preview-content {
-      background: #000000;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 480px;
-      padding: 24px;
-      color: white;
-    }
-
-    .preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 24px;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .preview-avatar {
-      width: 48px;
-      height: 48px;
-    }
-
-    .preview-text h3 {
-      margin: 0;
-      font-size: 18px;
-    }
-
-    .preview-text p {
-      margin: 4px 0 0;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .close-preview {
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
-      padding: 4px;
-    }
-
-    .audio-player {
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 16px;
-      margin: 24px 0;
-    }
-
-    .player-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .play-btn {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
-
-    .time-display {
-      color: #666;
-      font-size: 14px;
-      min-width: 45px;
-    }
-
-    .progress-bar {
-      flex-grow: 1;
-      height: 4px;
-      background: #333;
-      border-radius: 2px;
-      position: relative;
-    }
-
-    .progress {
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      background: #2196f3;
-      border-radius: 2px;
-      width: 0%;
-    }
-
-    .volume-btn {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
-
-    .action-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 12px;
-    }
-
-    .action-btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 24px;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 16px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    .preview-btn {
-      background: #2196f3;
-      color: white;
-    }
-
-    .edit-btn {
-      background: #1a1a1a;
-      color: white;
-      flex: 1;
-    }
-
-    .post-btn {
-      background: #2196f3;
-      color: white;
-      flex: 1;
-    }
-
-    .save-draft-btn {
-      background: #1a1a1a;
-      color: white;
-    }
-
-    .discard-btn {
-      background: #331111;
-      color: #ff4444;
-    }
-
-    .action-btn:hover {
-      opacity: 0.9;
-    }
-
-    .emotion-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #1a1a1a;
-      border-radius: 24px;
-      padding: 8px 16px;
-      color: #fff;
-      width: fit-content;
-      margin: 20px 0;
-    }
-
-    .emotion-label .material-symbols-outlined {
-      font-size: 20px;
-    }
-
-    .logo-container {
-      padding: 0 8px;
-      margin-bottom: 8px;
-      margin-left: 23px;
-      margin-top: 23px;
-    }
-  </style>
 </body>
 </html>
